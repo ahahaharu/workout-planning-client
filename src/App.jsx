@@ -8,6 +8,7 @@ import ExercisesPage from "./pages/ExercisesPage/ExercisesPage";
 import WorkoutsPage from "./pages/WorkoutsPage/WorkoutsPage";
 import { Route, Routes } from "react-router-dom";
 import WorkoutPlansPage from "./pages/WorkoutPlansPage/WorkoutPlansPage";
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
   return (
@@ -27,11 +28,7 @@ function App() {
       </Sidebar>
       <main className="flex flex-col w-full gap-4">
         <Header />
-        <Routes>
-          <Route path="/workouts" element={<WorkoutsPage />} />
-          <Route path="/exercises" element={<ExercisesPage />} />
-          <Route path="/workoutPlans" element={<WorkoutPlansPage />} />
-        </Routes>
+        <AppRoutes />
       </main>
     </Wrapper>
   );
