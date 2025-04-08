@@ -6,7 +6,6 @@ export default function SidebarItem({ icon, text, active, to }) {
   const { expanded } = useContext(SidebarContext);
   const location = useLocation();
 
-  // Проверяем, активен ли текущий путь
   const isActive = location.pathname === to;
   return (
     <Link to={to} className="flex items-center w-full">
