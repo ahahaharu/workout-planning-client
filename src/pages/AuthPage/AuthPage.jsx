@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate, Navigate } from "react-router-dom";
 import { User, Lock, Mail, LogIn, UserPlus } from "lucide-react";
 import { Button, Input, message, Tabs } from "antd";
+import { useTheme } from "../../context/ThemeContext";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
@@ -10,6 +11,7 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
+  const { isDarkMode } = useTheme();
 
   const { login, register, currentUser } = useAuth();
   const navigate = useNavigate();
@@ -49,8 +51,16 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-indigo-50">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+    <div
+      className={`flex items-center justify-center min-h-screen ${
+        isDarkMode ? "bg-[#121214]" : "bg-indigo-50"
+      } `}
+    >
+      <div
+        className={` p-8 rounded-2xl shadow-lg w-full max-w-md ${
+          isDarkMode ? "bg-[#211e26]" : "bg-white"
+        }`}
+      >
         <div className="flex justify-center mb-8">
           <div className="p-4 rounded-full bg-indigo-100">
             <User size={40} className="text-indigo-600" />
@@ -68,7 +78,11 @@ export default function AuthPage() {
               children: (
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      className={`block text-sm font-medium  mb-1 ${
+                        isDarkMode ? "text-white" : "text-gray-700"
+                      }`}
+                    >
                       Email
                     </label>
                     <Input
@@ -83,7 +97,11 @@ export default function AuthPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      className={`block text-sm font-medium text-gray-700 mb-1 ${
+                        isDarkMode ? "text-white" : "text-gray-700"
+                      }`}
+                    >
                       Пароль
                     </label>
                     <Input.Password
@@ -115,7 +133,11 @@ export default function AuthPage() {
               children: (
                 <form onSubmit={handleRegister} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      className={`block text-sm font-medium ${
+                        isDarkMode ? "text-white" : "text-gray-700"
+                      }`}
+                    >
                       Имя
                     </label>
                     <Input
@@ -129,7 +151,11 @@ export default function AuthPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      className={`block text-sm font-medium ${
+                        isDarkMode ? "text-white" : "text-gray-700"
+                      }`}
+                    >
                       Email
                     </label>
                     <Input
@@ -144,7 +170,11 @@ export default function AuthPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      className={`block text-sm font-medium ${
+                        isDarkMode ? "text-white" : "text-gray-700"
+                      }`}
+                    >
                       Пароль
                     </label>
                     <Input.Password

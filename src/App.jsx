@@ -13,7 +13,7 @@ import AppRoutes from "./routes/AppRoutes";
 import { useAuth } from "./context/AuthContext";
 import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ConfigProvider } from "antd";
+import { ConfigProvider, theme as antTheme } from "antd";
 import SettingsPage from "./pages/SettingsPage/SettingsPage";
 import { useTheme } from "./context/ThemeContext";
 
@@ -63,6 +63,7 @@ function App() {
       colorText: isDarkMode ? "#f3f4f6" : "#4b5563",
       colorTextSecondary: isDarkMode ? "#d1d5db" : "#6b7280",
     },
+    algorithm: isDarkMode ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm,
     components: {
       Button: {
         colorPrimary: "#6366f1", // indigo-500

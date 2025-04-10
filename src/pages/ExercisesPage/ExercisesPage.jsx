@@ -48,18 +48,7 @@ export default function ExercisesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="p-4 border border-indigo-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-          Упражнение 1
-        </div>
-        <div className="p-4 border border-indigo-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-          Упражнение 2
-        </div>
-        <div className="p-4 border border-indigo-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-          Упражнение 3
-        </div>
-        <div className="p-4 border border-indigo-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-          Упражнение 4
-        </div>
+        <div className="w-full p-4 border">Упражнение 1</div>
       </div>
     </PageLayout>
   );

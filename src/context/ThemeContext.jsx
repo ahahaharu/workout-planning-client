@@ -11,11 +11,18 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     const savedMode = localStorage.getItem("themeMode");
-    const savedColor = localStorage.getItem("themeColor");
 
-    if (savedMode) setThemeMode(savedMode);
-    if (savedColor) setPrimaryColor(savedColor);
-  }, []);
+    if (savedMode) {
+      setThemeMode(savedMode);
+    } else {
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches;
+      setThemeMode(prefersDark ? "dark" : "light");
+    }
+
+    document.documentElement.setAttribute("data-theme", themeMode);
+  }, [themeMode]);
 
   const toggleTheme = () => {
     const newMode = themeMode === "light" ? "dark" : "light";
