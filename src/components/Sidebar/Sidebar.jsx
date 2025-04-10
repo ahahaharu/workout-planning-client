@@ -1,5 +1,6 @@
 import React, { Children, createContext, useEffect, useState } from "react";
 import { ChevronFirst, ChevronLast, MoreVertical, Target } from "lucide-react";
+import Logo from "../../assets/logo.svg?react";
 
 const SidebarContext = createContext();
 export { SidebarContext };
@@ -25,18 +26,14 @@ export default function Sidebar({ children }) {
   return (
     <aside className="h-full">
       <nav className="h-full flex flex-col bg-white border border-indigo-200 shadow-sm rounded-2xl">
-        <div className="p-6 pb-2 flex justify-between items-center">
-          <Target
-            size={40}
-            className={`stroke-indigo-500 ${expanded ? "" : "w-0"}`}
-          />
-          <h1
-            className={`overflow-hidden transition-all text-xl text-indigo-400 font-bold  ${
-              expanded ? "w-32" : "w-0"
+        <div className="p-4 pb-2 flex justify-between items-center">
+          <Logo
+            width={130}
+            height={50}
+            className={`stroke-indigo-500 fill-indigo-500 ${
+              expanded ? "" : "w-0"
             }`}
-          >
-            Workout Planner
-          </h1>
+          />
           <button
             onClick={() => setExpanded((curr) => !curr)}
             className="p-1.5 rounded-lg bg-gray-50 hover:bg-gray-100"

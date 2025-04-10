@@ -4,17 +4,64 @@ import WorkoutsPage from "../pages/WorkoutsPage/WorkoutsPage";
 import ExercisesPage from "../pages/ExercisesPage/ExercisesPage";
 import WorkoutPlansPage from "../pages/WorkoutPlansPage/WorkoutPlansPage";
 import StatisticsPage from "../pages/StatisticsPage/StatisticsPage";
-import PageLayout from "../components/PageLayout/PageLayout";
+import AuthPage from "../pages/AuthPage/AuthPage";
 import ErrorPage from "../pages/ErrorPage/ErrorPage";
+import ProtectedRoute from "../components/ProtectedRoute/ProtectedRoute";
+import { useAuth } from "../context/AuthContext";
 
 export default function AppRoutes() {
+  const { currentUser } = useAuth();
+
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/workouts" />} />
-      <Route path="/workouts" element={<WorkoutsPage />} />
-      <Route path="/exercises" element={<ExercisesPage />} />
-      <Route path="/workoutPlans" element={<WorkoutPlansPage />} />
-      <Route path="/statistics" element={<StatisticsPage />} />
+      {/* Redirect root to either workouts (if authenticated) or auth */}
+      <Route
+        path="/"
+        element={
+          currentUser ? (
+            <Navigate to="/workouts" replace />
+          ) : (
+            <Navigate to="/auth" replace />
+          )
+        }
+      />
+
+      <Route path="/auth" element={<AuthPage />} />
+
+      <Route
+        path="/workouts"
+        element={
+          <ProtectedRoute>
+            <WorkoutsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/exercises"
+        element={
+          <ProtectedRoute>
+            <ExercisesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/workoutPlans"
+        element={
+          <ProtectedRoute>
+            <WorkoutPlansPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/statistics"
+        element={
+          <ProtectedRoute>
+            <StatisticsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Error page is accessible to everyone */}
       <Route path="*" element={<ErrorPage />} />
     </Routes>
   );
