@@ -8,6 +8,7 @@ import AuthPage from "../pages/AuthPage/AuthPage";
 import ErrorPage from "../pages/ErrorPage/ErrorPage";
 import ProtectedRoute from "../components/ProtectedRoute/ProtectedRoute";
 import { useAuth } from "../context/AuthContext";
+import SettingsPage from "../pages/SettingsPage/SettingsPage";
 
 export default function AppRoutes() {
   const { currentUser } = useAuth();
@@ -57,6 +58,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <StatisticsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
           </ProtectedRoute>
         }
       />
