@@ -24,7 +24,7 @@ export default function Header() {
       <div className="flex justify-between px-4 py-3 rounded-xl border-2 border-indigo-400 overflow-hidden w-full lg:w-auto">
         <input
           type="search"
-          placeholder="Search Something..."
+          placeholder="Поиск..."
           className={`outline-none bg-transparent  text-md mr-20 ${
             isDarkMode ? "text-white" : "text-gray-600"
           }`}

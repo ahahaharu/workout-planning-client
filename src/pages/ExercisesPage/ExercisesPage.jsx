@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import PageLayout from "../../components/PageLayout/PageLayout";
 import CategoryFilter from "../../components/CategoryFilter/CategoryFilter";
+import image from "../../assets/image.png";
+import { Button, Divider } from "antd";
 
 export default function ExercisesPage() {
   const exerciseCategories = [
@@ -47,8 +49,77 @@ export default function ExercisesPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="w-full p-4 border">Упражнение 1</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex justify-between w-full p-4 border rounded-xl border-indigo-300">
+          <div className="flex gap-4">
+            <div className="w-22 h-22 rounded overflow-hidden">
+              <img
+                src={image}
+                alt="image"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="flex flex-col justify-center">
+              <h1 className="text-xl">Жим лёжа</h1>
+              <p className="text-gray-400">Силовые · Грудь</p>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Button size="large">Информация</Button>
+            <Button size="large" type="primary">
+              Добавить в программу
+            </Button>
+          </div>
+        </div>
+        <div className="flex justify-between w-full p-4 border rounded-xl border-indigo-300">
+          <div className="flex gap-4">
+            <div className="w-22 h-22 rounded overflow-hidden">
+              <img
+                src={image}
+                alt="image"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="flex flex-col justify-center">
+              <h1 className="text-xl">Жим лёжа</h1>
+              <p className="text-gray-400">Силовые · Грудь</p>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Button size="large">Информация</Button>
+            <Button size="large" type="primary">
+              Добавить в программу
+            </Button>
+          </div>
+        </div>
+        <div className="flex justify-between w-full p-4 border rounded-xl border-indigo-300">
+          <div className="flex gap-4">
+            <div className="w-22 h-22 rounded overflow-hidden">
+              <img
+                src={image}
+                alt="image"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="flex flex-col justify-center">
+              <h1 className="text-xl">Жим лёжа</h1>
+              <p className="text-gray-400">Силовые · Грудь</p>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Button size="large">Информация</Button>
+            <Button size="large" type="primary">
+              Добавить в программу
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <Divider />
+      <div className="w-full flex justify-center">
+        <Button type="primary" size="large">
+          Добавить своё упражнение
+        </Button>
       </div>
     </PageLayout>
   );
