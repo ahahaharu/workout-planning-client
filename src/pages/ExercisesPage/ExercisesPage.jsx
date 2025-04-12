@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import PageLayout from "../../components/PageLayout/PageLayout";
 import CategoryFilter from "../../components/CategoryFilter/CategoryFilter";
-import image from "../../assets/image.png";
-import { Button, Divider, Modal, Tabs } from "antd";
-import { Edit, Trash } from "lucide-react";
-import InfoModal from "../../components/InfoModal/InfoModal";
+import benchPressImage from "../../assets/benchPress.png";
+import leverSeatedLegPressImage from "../../assets/leverSeatedLegPress.png";
+import { Button, Divider } from "antd";
 import ExerciseAdditionModal from "../../components/AddExerciseModal/ExerciseAdditionModal";
+import ExerciseCard from "../../components/ExerciseCard/ExerciseCard";
 
 export default function ExercisesPage() {
   const exerciseCategories = [
@@ -25,8 +25,7 @@ export default function ExercisesPage() {
 
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedBodyParts, setSelectedBodyParts] = useState([]);
-  const [infoModalOpen, setInfoModalOpen] = useState(false);
-  const [selectedExercise, setSelectedExercise] = useState(true);
+
   const [ExerciseAdditionModalOpen, setExerciseAdditionModalOpen] =
     useState(false);
 
@@ -38,11 +37,6 @@ export default function ExercisesPage() {
   const handleBodyPartSelect = (bodyParts) => {
     setSelectedBodyParts(bodyParts);
     console.log("Selected body parts:", bodyParts);
-  };
-
-  const openInfoModal = (exercise) => {
-    setSelectedExercise(exercise);
-    setInfoModalOpen(true);
   };
 
   return (
@@ -59,87 +53,29 @@ export default function ExercisesPage() {
           onSelect={handleBodyPartSelect}
         />
       </div>
-
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <div className="flex justify-between w-full p-4 border rounded-xl border-indigo-300">
-          <div className="flex gap-4">
-            <div className="w-22 h-22 rounded overflow-hidden">
-              <img
-                src={image}
-                alt="image"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="flex flex-col justify-center">
-              <h1 className="text-xl">Жим лёжа</h1>
-              <p className="text-gray-400">Силовые · Грудь</p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Button
-              size="large"
-              onClick={() =>
-                openInfoModal({
-                  name: "Жим лёжа",
-                  image: image,
-                  category: "Силовые",
-                  bodyPart: "Грудь",
-                  videoUrl: `https://www.youtube.com/embed/SCVCLChPQFY`,
-                  description:
-                    "Жим лёжа - это силовое упражнение, которое направлено на развитие грудных мышц, плеч и трицепсов. Оно выполняется в положении лёжа на скамье с использованием штанги или гантелей.",
-                })
-              }
-            >
-              Информация
-            </Button>
-
-            <Button size="large" type="primary">
-              Добавить в программу
-            </Button>
-          </div>
-        </div>
-        <div className="flex justify-between w-full p-4 border rounded-xl border-indigo-300">
-          <div className="flex gap-4">
-            <div className="w-22 h-22 rounded overflow-hidden">
-              <img
-                src={image}
-                alt="image"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="flex flex-col justify-center">
-              <h1 className="text-xl">Жим лёжа</h1>
-              <p className="text-gray-400">Силовые · Грудь</p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Button size="large">Информация</Button>
-            <Button size="large" type="primary">
-              Добавить в программу
-            </Button>
-          </div>
-        </div>
-        <div className="flex justify-between w-full p-4 border rounded-xl border-indigo-300">
-          <div className="flex gap-4">
-            <div className="w-22 h-22 rounded overflow-hidden">
-              <img
-                src={image}
-                alt="image"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="flex flex-col justify-center">
-              <h1 className="text-xl">Жим лёжа</h1>
-              <p className="text-gray-400">Силовые · Грудь</p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Button size="large">Информация</Button>
-            <Button size="large" type="primary">
-              Добавить в программу
-            </Button>
-          </div>
-        </div>
+        <ExerciseCard
+          exercise={{
+            name: "Жим лёжа",
+            image: benchPressImage,
+            category: "Силовые",
+            bodyPart: "Грудь",
+            videoUrl: `https://www.youtube.com/embed/SCVCLChPQFY`,
+            description:
+              "Жим лёжа - это силовое упражнение, которое направлено на развитие грудных мышц, плеч и трицепсов. Оно выполняется в положении лёжа на скамье с использованием штанги или гантелей.",
+          }}
+        />
+        <ExerciseCard
+          exercise={{
+            name: "Рычажный жим ногами",
+            image: leverSeatedLegPressImage,
+            category: "Силовые",
+            bodyPart: "Ноги",
+            videoUrl: `https://www.youtube.com/embed/SCVCLChPQFY`,
+            description:
+              "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Odio saepe maxime repudiandae officia unde distinctio quidem nostrum reprehenderit voluptatem totam, provident fuga neque, beatae repellendus voluptate expedita suscipit aut! Molestias.",
+          }}
+        />
       </div>
 
       <Divider />
@@ -153,11 +89,6 @@ export default function ExercisesPage() {
         </Button>
       </div>
 
-      <InfoModal
-        isOpen={infoModalOpen}
-        onClose={() => setInfoModalOpen(false)}
-        exercise={selectedExercise}
-      />
       <ExerciseAdditionModal
         isOpen={ExerciseAdditionModalOpen}
         onClose={() => setExerciseAdditionModalOpen(false)}
