@@ -1,17 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import PageLayout from "../../components/PageLayout/PageLayout";
 import { Button, Divider } from "antd";
 
 import WorkoutPlanCard from "../../components/WorkoutPlanCard/WorkoutPlanCard";
+import WorkoutPlanAdditionModal from "../../components/WorkoutPlanAdditionModal/WorkoutPlanAdditionModal";
 
 export default function WorkoutPlansPage() {
+  const [additionModalOpen, setAdditionModalOpen] = useState(false);
+
   return (
     <PageLayout title="Программы">
       <div className="w-full flex justify-center mb-5 gap-4">
         <Button size="large" className="w-1/2">
           Начать пустую тренировку
         </Button>
-        <Button type="primary" size="large" className="w-1/2">
+        <Button
+          type="primary"
+          size="large"
+          className="w-1/2"
+          onClick={() => setAdditionModalOpen(true)}
+        >
           Добавить новую программу тренировок
         </Button>
       </div>
@@ -37,6 +45,10 @@ export default function WorkoutPlansPage() {
           }}
         />
       </div>
+      <WorkoutPlanAdditionModal
+        isOpen={additionModalOpen}
+        onClose={() => setAdditionModalOpen(false)}
+      />
     </PageLayout>
   );
 }

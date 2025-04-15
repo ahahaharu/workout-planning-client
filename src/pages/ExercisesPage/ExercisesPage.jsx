@@ -26,7 +26,7 @@ export default function ExercisesPage() {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedBodyParts, setSelectedBodyParts] = useState([]);
 
-  const [ExerciseAdditionModalOpen, setExerciseAdditionModalOpen] =
+  const [exerciseAdditionModalOpen, setExerciseAdditionModalOpen] =
     useState(false);
 
   const handleCategorySelect = (categories) => {
@@ -90,7 +90,7 @@ export default function ExercisesPage() {
       </div>
 
       <ExerciseAdditionModal
-        isOpen={ExerciseAdditionModalOpen}
+        isOpen={exerciseAdditionModalOpen}
         onClose={() => setExerciseAdditionModalOpen(false)}
       />
     </PageLayout>
