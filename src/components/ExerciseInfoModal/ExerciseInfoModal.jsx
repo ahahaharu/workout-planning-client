@@ -3,7 +3,7 @@ import { Edit, Trash } from "lucide-react";
 import React, { useEffect } from "react";
 import { useState } from "react";
 
-export default function InfoModal({ isOpen, onClose, exercise }) {
+export default function ExerciseInfoModal({ isOpen, onClose, exercise }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -1,8 +1,8 @@
 import { Button } from "antd";
 import React, { useState } from "react";
-import InfoModal from "../InfoModal/InfoModal";
+import ExerciseInfoModal from "../ExerciseInfoModal/ExerciseInfoModal";
 
-export default function ExerciseCard({ exercise }) {
+export default function ({ exercise }) {
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState(true);
 
@@ -49,7 +49,7 @@ export default function ExerciseCard({ exercise }) {
           Добавить в программу
         </Button>
       </div>
-      <InfoModal
+      <ExerciseInfoModal
         isOpen={infoModalOpen}
         onClose={() => setInfoModalOpen(false)}
         exercise={selectedExercise}
