@@ -16,11 +16,12 @@ import { useEffect, useState } from "react";
 import { ConfigProvider, theme as antTheme } from "antd";
 import SettingsPage from "./pages/SettingsPage/SettingsPage";
 import { useTheme } from "./context/ThemeContext";
+import ProfilePage from "./pages/ProfilePage/ProfilePage";
 
 function App() {
   const { currentUser } = useAuth();
   const { loading } = useAuth();
-  const { primaryColor, isDarkMode } = useTheme();
+  const { isDarkMode } = useTheme();
   const location = useLocation();
   const [is404, setIs404] = useState(false);
 
@@ -33,6 +34,7 @@ function App() {
       "/workoutPlans",
       "/statistics",
       "/settings",
+      "/profile",
       "/",
     ];
     setIs404(!definedRoutes.some((route) => location.pathname === route));
@@ -40,6 +42,7 @@ function App() {
 
   const isAuthPage = location.pathname === "/auth";
   const isSettings = location.pathname === "/settings";
+  const isProfile = location.pathname === "/profile";
 
   // Theme configuration
   const theme = {
@@ -130,6 +133,8 @@ function App() {
           </Sidebar>
           {isSettings ? (
             <SettingsPage />
+          ) : isProfile ? (
+            <ProfilePage />
           ) : (
             <main className="flex flex-col w-full gap-4">
               <Header />

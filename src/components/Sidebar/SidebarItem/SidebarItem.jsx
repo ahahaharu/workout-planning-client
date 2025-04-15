@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { SidebarContext } from "../Sidebar";
+import { SidebarContext } from "../../../context/SidebarContext";
 import { useTheme } from "../../../context/ThemeContext";
 
 export default function SidebarItem({ icon, text, active, to }) {

@@ -9,6 +9,7 @@ import ErrorPage from "../pages/ErrorPage/ErrorPage";
 import ProtectedRoute from "../components/ProtectedRoute/ProtectedRoute";
 import { useAuth } from "../context/AuthContext";
 import SettingsPage from "../pages/SettingsPage/SettingsPage";
+import ProfilePage from "../pages/ProfilePage/ProfilePage";
 
 export default function AppRoutes() {
   const { currentUser } = useAuth();
@@ -69,8 +70,15 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
 
-      {/* Error page is accessible to everyone */}
       <Route path="*" element={<ErrorPage />} />
     </Routes>
   );
