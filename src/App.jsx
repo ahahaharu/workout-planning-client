@@ -17,6 +17,8 @@ import { ConfigProvider, theme as antTheme } from "antd";
 import SettingsPage from "./pages/SettingsPage/SettingsPage";
 import { useTheme } from "./context/ThemeContext";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
+import StatisticsPage from "./pages/StatisticsPage/StatisticsPage";
+import { createWorkoutPlanner } from "workout-planning-lib";
 
 function App() {
   const { currentUser } = useAuth();
@@ -43,6 +45,7 @@ function App() {
   const isAuthPage = location.pathname === "/auth";
   const isSettings = location.pathname === "/settings";
   const isProfile = location.pathname === "/profile";
+  const isStatistics = location.pathname === "/statistics";
 
   // Theme configuration
   const theme = {
@@ -135,6 +138,8 @@ function App() {
             <SettingsPage />
           ) : isProfile ? (
             <ProfilePage />
+          ) : isStatistics ? (
+            <StatisticsPage></StatisticsPage>
           ) : (
             <main className="flex flex-col w-full gap-4">
               <Header />
