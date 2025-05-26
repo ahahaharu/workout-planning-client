@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Clock } from "lucide-react";
 import { Button } from "antd";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
-import WorkoutPlanInfoModal from "../WorkoutInfoModal/WorkoutInfoModal";
+import WorkoutPlanInfoModal from "../WorkoutPlanInfoModal/WorkoutPlanInfoModal";
 
 export default function WorkoutPlanCard({ workoutPlan, onDelete, onEdit }) {
   const [infoModalOpen, setInfoModalOpen] = useState(false);
