@@ -170,10 +170,8 @@ export const AuthProvider = ({ children }) => {
       }
     }
     
-    // Обновляем currentUser в React состоянии
     setCurrentUser(userData);
     
-    // Обновляем данные в localStorage
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
