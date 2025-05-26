@@ -29,7 +29,7 @@ export default function WorkoutSelectorModal({
   const { workoutPlanService } = useWorkoutPlanner();
   const { currentUser } = useAuth();
 
-  // Загрузка планов тренировок
+  // Эффект для загрузки планов тренировок
   useEffect(() => {
     if (isOpen && workoutPlanService && currentUser) {
       setLoading(true);
@@ -44,6 +44,16 @@ export default function WorkoutSelectorModal({
       }
     }
   }, [isOpen, workoutPlanService, currentUser]);
+
+  // Новый эффект для сброса и инициализации формы при открытии модального окна
+  useEffect(() => {
+    if (isOpen) {
+      // Устанавливаем текущую дату при каждом открытии модального окна
+      workoutForm.setFieldsValue({
+        date: dayjs(),
+      });
+    }
+  }, [isOpen, workoutForm]);
 
   // Обработка поиска планов
   const handleSearch = (e) => {

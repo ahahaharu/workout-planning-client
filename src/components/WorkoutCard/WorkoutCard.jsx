@@ -3,7 +3,7 @@ import { Clock, Weight, CalendarDays } from "lucide-react";
 import React, { useState } from "react";
 import WorkoutInfoModal from "../WorkoutInfoModal/WorkoutInfoModal";
 
-export default function WorkoutCard({ workout, onDelete }) {
+export default function WorkoutCard({ workout, onDelete, onEdit }) {
   const [infoModalOpen, setInfoModalOpen] = useState(false);
 
   // Проверяем и форматируем данные
@@ -86,6 +86,7 @@ export default function WorkoutCard({ workout, onDelete }) {
         onClose={() => setInfoModalOpen(false)}
         workout={workout}
         onDelete={handleDeleteWorkout}
+        onEdit={onEdit}
       />
     </div>
   );

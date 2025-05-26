@@ -405,6 +405,104 @@ export default function WorkoutsPage() {
     }
   };
 
+  const handleEditWorkout = (workoutId, editedWorkoutData) => {
+    if (workoutService && currentUser) {
+      try {
+        console.log("Обновляем тренировку:", workoutId, editedWorkoutData);
+
+        // Находим существующую тренировку в сервисе
+        const existingWorkout = workoutService.getWorkoutById(workoutId);
+
+        if (!existingWorkout) {
+          throw new Error("Тренировка не найдена");
+        }
+
+        // Обновляем основные данные тренировки
+        if (existingWorkout.name && editedWorkoutData.name) {
+          existingWorkout.name = editedWorkoutData.name;
+        }
+
+        if (editedWorkoutData.date) {
+          existingWorkout.date = editedWorkoutData.date;
+        }
+
+        // Очищаем все существующие упражнения, если метод доступен
+        if (typeof workoutService.clearWorkoutExercises === "function") {
+          workoutService.clearWorkoutExercises(workoutId);
+        } else {
+          // Альтернативный подход - удаляем каждое упражнение по отдельности
+          const exercisesToRemove = [...existingWorkout.exercises];
+          exercisesToRemove.forEach((exercise) => {
+            workoutService.removeExerciseFromWorkout(workoutId, exercise.id);
+          });
+
+          // Очищаем массив упражнений
+          existingWorkout.exercises = [];
+        }
+
+        // Добавляем упражнения и подходы из отредактированной тренировки
+        for (const exercise of editedWorkoutData.exercises) {
+          // Добавляем упражнение
+          workoutService.addExerciseToWorkout(workoutId, exercise.id);
+
+          // Добавляем подходы
+          const sets = exercise.completedSets || exercise.sets || [];
+
+          if (
+            sets.length > 0 &&
+            (exercise.type === "STRENGTH" || exercise.type === "Strength")
+          ) {
+            for (const set of sets) {
+              try {
+                workoutService.recordSetInWorkout(
+                  workoutId,
+                  exercise.id,
+                  Number(set.reps) || 0,
+                  Number(set.weight) || 0
+                );
+              } catch (error) {
+                console.error(
+                  `Ошибка при добавлении подхода для ${exercise.name}:`,
+                  error
+                );
+              }
+            }
+          }
+        }
+
+        // Сохраняем изменения, если доступен метод
+        if (typeof workoutService._saveWorkouts === "function") {
+          workoutService._saveWorkouts();
+        }
+
+        // Обновляем состояние UI
+        setWorkouts((prevWorkouts) =>
+          prevWorkouts.map((workout) =>
+            workout.id === workoutId
+              ? {
+                  ...workout,
+                  name: editedWorkoutData.name,
+                  date: formatDate(editedWorkoutData.date),
+                  rawDate: editedWorkoutData.date,
+                  exercises: editedWorkoutData.exercises,
+                  totalWeight: editedWorkoutData.totalWeight,
+                  description: editedWorkoutData.description,
+                }
+              : workout
+          )
+        );
+
+        message.success("Тренировка успешно обновлена");
+
+        // Перезагружаем тренировки для синхронизации с бэкендом
+        setTimeout(loadWorkouts, 500);
+      } catch (error) {
+        console.error("Ошибка при обновлении тренировки:", error);
+        message.error(`Не удалось обновить тренировку: ${error.message}`);
+      }
+    }
+  };
+
   const formatDate = (date) => {
     if (!date) return "Без даты";
 
@@ -445,6 +543,7 @@ export default function WorkoutsPage() {
               key={workout.id}
               workout={workout}
               onDelete={handleDeleteWorkout}
+              onEdit={handleEditWorkout}
             />
           ))}
         </div>
