@@ -27,6 +27,7 @@ function App() {
   const location = useLocation();
   const [is404, setIs404] = useState(false);
 
+
   useEffect(() => {
     document.body.style.backgroundColor = isDarkMode ? "#121214" : "#f9fafb";
     const definedRoutes = [

@@ -19,6 +19,7 @@ export default function Sidebar({ children }) {
   const { isDarkMode } = useTheme();
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -72,6 +73,8 @@ export default function Sidebar({ children }) {
     },
   ];
 
+  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=0D8ABC&color=fff&size=128`;
+
   return (
     <aside className="h-full">
       <nav
@@ -122,7 +125,7 @@ export default function Sidebar({ children }) {
           >
             <div className="flex hover:bg-indigo-50 p-1 rounded-md cursor-pointer group">
               <img
-                src="https://ui-avatars.com/api/?background=0D8ABC&color=fff"
+                src={avatarUrl}
                 className="w-10 h-10 rounded-md"
               />
               <div
@@ -136,14 +139,14 @@ export default function Sidebar({ children }) {
                       isDarkMode ? "text-indigo-500" : "text-black"
                     }`}
                   >
-                    John Doe
+                    { currentUser.name }
                   </h4>
                   <span
                     className={`text-xs ${
                       isDarkMode ? "text-white" : "text-gray-600"
                     }`}
                   >
-                    johndoe@gmail.com
+                    { currentUser.email}
                   </span>
                 </div>
                 <MoreVertical
