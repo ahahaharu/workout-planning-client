@@ -334,13 +334,7 @@ export default function ExerciseInfoModal({
     <>
       <Modal
         title={<p>Информация об упражнении</p>}
-        footer={
-          <div className="flex gap-4 justify-center">
-            <Button type="primary" onClick={onClose}>
-              Добавить в программу тренировок
-            </Button>
-          </div>
-        }
+        footer={null}
         open={isOpen}
         onCancel={onClose}
       >

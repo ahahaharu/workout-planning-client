@@ -1,5 +1,5 @@
-import { Button, Divider, Modal, Tabs, Spin } from "antd";
-import { Edit, Trash } from "lucide-react";
+import { Button, Divider, Modal, Tabs, Spin, Card, Tag, Empty } from "antd";
+import { Edit, Trash, Calendar, Weight, BarChart2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 
@@ -11,6 +11,8 @@ export default function WorkoutPlanInfoModal({
   onEdit,
 }) {
   const [loading, setLoading] = useState(true);
+  const [planHistory, setPlanHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const { workoutService } = useWorkoutPlanner();
 
   useEffect(() => {
@@ -21,6 +23,86 @@ export default function WorkoutPlanInfoModal({
       }, 500);
     }
   }, [isOpen]);
+
+  // Загружаем историю использования плана при открытии модального окна
+  useEffect(() => {
+    if (isOpen && workoutPlan && workoutService) {
+      loadPlanHistory();
+    }
+  }, [isOpen, workoutPlan, workoutService]);
+
+  // Функция для получения тренировок, где использовался данный план
+  const loadPlanHistory = () => {
+    if (!workoutPlan || !workoutService) return;
+
+    setHistoryLoading(true);
+
+    try {
+      // Получаем все тренировки пользователя
+      const allWorkouts = workoutService.getAllWorkouts();
+
+      // Фильтруем тренировки, где был использован данный план
+      const relevantWorkouts = allWorkouts.filter(
+        (workout) => workout.plan && workout.plan.id === workoutPlan.id
+      );
+
+      // Сортируем по дате (новые сверху)
+      const sortedWorkouts = relevantWorkouts.sort((a, b) => {
+        const dateA = a.date ? new Date(a.date) : new Date(0);
+        const dateB = b.date ? new Date(b.date) : new Date(0);
+        return dateB - dateA;
+      });
+
+      // Форматируем данные для отображения
+      const historyData = sortedWorkouts.map((workout) => {
+        // Вычисляем общий вес тренировки
+        let totalWeight = 0;
+        try {
+          if (typeof workout.getTotalWeight === "function") {
+            totalWeight = workout.getTotalWeight();
+          } else {
+            // Ручной расчет общего веса
+            (workout.exercises || []).forEach((exercise) => {
+              if (
+                exercise.type === "STRENGTH" ||
+                exercise.type === "Strength"
+              ) {
+                const sets = exercise.sets || exercise.completedSets || [];
+                sets.forEach((set) => {
+                  totalWeight +=
+                    (Number(set.weight) || 0) * (Number(set.reps) || 0);
+                });
+              }
+            });
+          }
+        } catch (error) {
+          console.error("Ошибка при расчете общего веса:", error);
+        }
+
+        return {
+          workoutId: workout.id,
+          workoutName: workout.name || `Тренировка ${workout.id}`,
+          date: formatDate(workout.date),
+          totalWeight: totalWeight,
+          exercisesCount: (workout.exercises || []).length,
+        };
+      });
+
+      setPlanHistory(historyData);
+    } catch (error) {
+      console.error("Ошибка при загрузке истории плана тренировки:", error);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  // Форматирование даты
+  const formatDate = (date) => {
+    if (!date) return "Дата не указана";
+
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(date).toLocaleDateString("ru-RU", options);
+  };
 
   const handleEditPlan = () => {
     if (onEdit && workoutPlan) {
@@ -41,7 +123,7 @@ export default function WorkoutPlanInfoModal({
       key: "1",
       label: "Информация",
       children: (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-4">
           <h1 className="text-3xl font-bold">{workoutPlan?.name}</h1>
           <div>
             <p>
@@ -97,7 +179,57 @@ export default function WorkoutPlanInfoModal({
           <h1 className="text-2xl font-bold">
             История тренировок с этой программой
           </h1>
-          <p className="text-center">История пуста</p>
+
+          {historyLoading ? (
+            <div className="flex justify-center py-10">
+              <Spin size="large" />
+            </div>
+          ) : planHistory.length > 0 ? (
+            <div className="flex flex-col gap-3">
+              {planHistory.map((item, index) => (
+                <Card
+                  key={`${item.workoutId}-${index}`}
+                  size="large"
+                  className="shadow-sm"
+                  title={
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold">{item.workoutName}</span>
+                      <Tag color="blue" className="flex items-center">
+                        <div className="flex items-center gap-2 my-1.5 mx-1">
+                          <Calendar size={14} />
+                          <p>{item.date}</p>
+                        </div>
+                      </Tag>
+                    </div>
+                  }
+                >
+                  <div className="flex justify-between items-center">
+                    <span>Количество упражнений: {item.exercisesCount}</span>
+                    <Tag color="green">
+                      <div className="flex items-center gap-2 my-1.5 mx-1">
+                        <Weight size={14} />
+                        <p>{item.totalWeight} кг</p>
+                      </div>
+                    </Tag>
+                  </div>
+                </Card>
+              ))}
+
+              {planHistory.length > 5 && (
+                <div className="flex items-center justify-center my-2">
+                  <Tag color="blue" className="flex items-center gap-1">
+                    <BarChart2 size={14} />
+                    Всего тренировок: {planHistory.length}
+                  </Tag>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Empty
+              description="Этот план еще не использовался в тренировках"
+              className="my-4"
+            />
+          )}
         </div>
       ),
     },
