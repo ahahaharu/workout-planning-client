@@ -33,7 +33,6 @@ export default function ExerciseAdditionModal({
         
         setSelectedCategory(initialData.category);
         
-        // Добавляем изображение, если оно есть
         if (initialData.image) {
           setFileList([
             {

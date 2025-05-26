@@ -1,21 +1,21 @@
-import { Button, Divider, Form, Input, Modal } from "antd";
+import { Button, Divider, Form, Input, Modal, message } from "antd";
 const { TextArea } = Input;
 import React from "react";
 
-export default function WorkoutPlanAdditionModal({ isOpen, onClose }) {
+export default function WorkoutPlanAdditionModal({ isOpen, onClose, onAddWorkoutPlan }) {
   const [form] = Form.useForm();
 
   const handleSubmit = (values) => {
-    const formData = {
-      ...values,
-      image:
-        fileList.length > 0 ? fileList[0].thumbUrl || fileList[0].url : null,
-    };
-    console.log("Form submitted:", formData);
-    message.success("Упражнение добавлено");
-
+    if (!values.name) {
+      message.error("Пожалуйста, введите название плана тренировки");
+      return;
+    }
+    
+    if (onAddWorkoutPlan) {
+      onAddWorkoutPlan(values);
+    }
+    
     form.resetFields();
-    setFileList([]);
     onClose();
   };
 
@@ -55,13 +55,9 @@ export default function WorkoutPlanAdditionModal({ isOpen, onClose }) {
         </Form.Item>
 
         <Form.Item label="Описание" name="description">
-          <TextArea rows={3} />
+          <TextArea rows={3} placeholder="Описание программы тренировок" />
         </Form.Item>
       </Form>
-      <Divider />
-      <div className="w-full flex justify-center mb-5">
-        <Button type="primary">Добавить упражнение</Button>
-      </div>
     </Modal>
   );
 }
