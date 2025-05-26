@@ -25,7 +25,7 @@ import {
   PlusCircle,
 } from "lucide-react";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
-import ExerciseDetailModal from "../ExerciseDetailModal/ExerciseDetailModal";
+import ExerciseInfoModal from "../ExerciseInfoModal/ExerciseInfoModal";
 
 export default function WorkoutSessionModal({
   isOpen,
@@ -238,7 +238,6 @@ export default function WorkoutSessionModal({
           ? savedWorkout.planId.id
           : savedWorkout.planId;
 
-      // Получаем план тренировки
       const plan = workoutPlanService.getWorkoutPlanById(planId);
 
       if (!plan) {
@@ -246,9 +245,7 @@ export default function WorkoutSessionModal({
         return;
       }
 
-      // Сначала удаляем все существующие упражнения и подходы из плана
       if (plan.exercises && plan.exercises.length > 0) {
-        // Копируем массив упражнений, чтобы избежать проблем при удалении во время итерации
         [...plan.exercises].forEach((exercise) => {
           workoutPlanService.removeExerciseFromWorkoutPlan(
             plan.id,
@@ -257,12 +254,9 @@ export default function WorkoutSessionModal({
         });
       }
 
-      // Теперь добавляем упражнения из сохраненной тренировки
       savedWorkout.exercises.forEach((exercise) => {
-        // Добавляем упражнение в план
         workoutPlanService.addExerciseToWorkoutPlan(plan.id, exercise.id);
 
-        // Добавляем подходы для силовых упражнений
         if (
           (exercise.type === "STRENGTH" || exercise.type === "Strength") &&
           exercise.completedSets &&
@@ -288,7 +282,6 @@ export default function WorkoutSessionModal({
         }
       });
 
-      // Сохраняем изменения в хранилище, если доступен такой метод
       if (typeof workoutPlanService._saveWorkoutPlans === "function") {
         workoutPlanService._saveWorkoutPlans();
       }
@@ -407,11 +400,11 @@ export default function WorkoutSessionModal({
     return (
       <Card
         key={index}
-        size="small"
+        size="medium"
         className={`shadow-sm ${isCompleted ? "border-green-500" : ""}`}
         title={
           <div className="flex items-center gap-2 justify-between">
-            <div className="flex items-center">
+            <div className="flex items-center gap-1">
               {exercise.image && (
                 <img
                   src={exercise.image}
@@ -425,14 +418,6 @@ export default function WorkoutSessionModal({
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                type={isCompleted ? "primary" : "default"}
-                size="small"
-                icon={isCompleted ? <Check size={16} /> : null}
-                onClick={() => handleCompleteExercise(index)}
-              >
-                {isCompleted ? "Выполнено" : "Выполнить"}
-              </Button>
               <Button
                 type="link"
                 size="small"
@@ -681,7 +666,7 @@ export default function WorkoutSessionModal({
         )}
       </Modal>
 
-      <ExerciseDetailModal
+      <ExerciseInfoModal
         isOpen={exerciseDetailModalOpen}
         onClose={() => setExerciseDetailModalOpen(false)}
         exercise={selectedExercise}

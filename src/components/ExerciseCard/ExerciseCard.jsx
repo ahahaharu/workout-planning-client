@@ -1,7 +1,6 @@
 import { Button } from "antd";
 import React, { useState } from "react";
 import ExerciseInfoModal from "../ExerciseInfoModal/ExerciseInfoModal";
-import ExerciseDetailModal from "../ExerciseDetailModal/ExerciseDetailModal";
 
 export default function ExerciseCard({ exercise, onDelete, onEdit }) {
   const [infoModalOpen, setInfoModalOpen] = useState(false);

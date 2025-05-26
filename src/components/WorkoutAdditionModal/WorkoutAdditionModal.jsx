@@ -13,9 +13,6 @@ export default function WorkoutAdditionModal({ isOpen, onClose }) {
         <Button key="cancel" onClick={onClose}>
           Отмена
         </Button>,
-        // <Button key="submit" type="primary" onClick={() => form.submit()}>
-        //   Записать тренировку
-        // </Button>,
       ]}
     >
       <div className="flex flex-col gap-3 my-5">

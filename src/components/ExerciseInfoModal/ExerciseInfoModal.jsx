@@ -48,40 +48,33 @@ export default function ExerciseInfoModal({
     }, 500);
   }, [isOpen]);
 
-  // Загружаем историю упражнения при открытии модального окна
   useEffect(() => {
     if (isOpen && exercise && workoutService) {
       loadExerciseHistory();
     }
   }, [isOpen, exercise, workoutService]);
 
-  // Функция для получения тренировок, где использовалось упражнение
   const loadExerciseHistory = () => {
     if (!exercise || !workoutService) return;
 
     setHistoryLoading(true);
 
     try {
-      // Получаем все тренировки пользователя
       const allWorkouts = workoutService.getAllWorkouts();
 
-      // Фильтруем тренировки, где было использовано данное упражнение
       const relevantWorkouts = allWorkouts.filter(
         (workout) =>
           workout.exercises &&
           workout.exercises.some((ex) => ex.id === exercise.id)
       );
 
-      // Сортируем по дате (новые сверху)
       const sortedWorkouts = relevantWorkouts.sort((a, b) => {
         const dateA = a.date ? new Date(a.date) : new Date(0);
         const dateB = b.date ? new Date(b.date) : new Date(0);
         return dateB - dateA;
       });
 
-      // Форматируем данные для отображения
       const historyData = sortedWorkouts.map((workout) => {
-        // Находим конкретный экземпляр упражнения в тренировке
         const exerciseInstance = workout.exercises.find(
           (ex) => ex.id === exercise.id
         );
@@ -105,7 +98,6 @@ export default function ExerciseInfoModal({
     }
   };
 
-  // Форматирование даты
   const formatDate = (date) => {
     if (!date) return "Дата не указана";
 
@@ -113,7 +105,6 @@ export default function ExerciseInfoModal({
     return new Date(date).toLocaleDateString("ru-RU", options);
   };
 
-  // Расчет общего веса для упражнения в тренировке
   const calculateTotalWeight = (sets) => {
     if (!sets || !sets.length) return 0;
 
@@ -138,6 +129,42 @@ export default function ExerciseInfoModal({
     if (onEdit) {
       onEdit(exercise.id, updatedExercise);
       onClose();
+    }
+  };
+
+  // Функция для преобразования URL видео YouTube в формат для встраивания
+  const getEmbedUrl = (url) => {
+    if (!url) return null;
+
+    try {
+      // Для ссылок вида https://www.youtube.com/watch?v=ID
+      let videoId = "";
+
+      if (url.includes("youtube.com/watch")) {
+        const urlObj = new URL(url);
+        videoId = urlObj.searchParams.get("v");
+      }
+      // Для ссылок вида https://youtu.be/ID
+      else if (url.includes("youtu.be/")) {
+        videoId = url.split("youtu.be/")[1];
+        if (videoId.includes("?")) {
+          videoId = videoId.split("?")[0];
+        }
+      }
+      // Если это уже ссылка для встраивания
+      else if (url.includes("youtube.com/embed/")) {
+        return url; // Уже в правильном формате
+      }
+
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+
+      // Если формат не распознан, возвращаем исходную ссылку
+      return url;
+    } catch (error) {
+      console.error("Ошибка при обработке URL видео:", error);
+      return null;
     }
   };
 
@@ -185,11 +212,12 @@ export default function ExerciseInfoModal({
           <h1 className="text-2xl font-bold">Видео демострации упражнения</h1>
           {exercise?.videoUrl ? (
             <iframe
-              src={exercise.videoUrl}
+              src={getEmbedUrl(exercise.videoUrl)}
               className="w-full aspect-video rounded-xl"
               title={`${exercise?.name} демонстрация`}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
+              frameBorder="0"
             ></iframe>
           ) : (
             <p className="text-center my-10">Видео отсутствует</p>

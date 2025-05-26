@@ -24,44 +24,36 @@ export default function WorkoutPlanInfoModal({
     }
   }, [isOpen]);
 
-  // Загружаем историю использования плана при открытии модального окна
   useEffect(() => {
     if (isOpen && workoutPlan && workoutService) {
       loadPlanHistory();
     }
   }, [isOpen, workoutPlan, workoutService]);
 
-  // Функция для получения тренировок, где использовался данный план
   const loadPlanHistory = () => {
     if (!workoutPlan || !workoutService) return;
 
     setHistoryLoading(true);
 
     try {
-      // Получаем все тренировки пользователя
       const allWorkouts = workoutService.getAllWorkouts();
 
-      // Фильтруем тренировки, где был использован данный план
       const relevantWorkouts = allWorkouts.filter(
         (workout) => workout.plan && workout.plan.id === workoutPlan.id
       );
 
-      // Сортируем по дате (новые сверху)
       const sortedWorkouts = relevantWorkouts.sort((a, b) => {
         const dateA = a.date ? new Date(a.date) : new Date(0);
         const dateB = b.date ? new Date(b.date) : new Date(0);
         return dateB - dateA;
       });
 
-      // Форматируем данные для отображения
       const historyData = sortedWorkouts.map((workout) => {
-        // Вычисляем общий вес тренировки
         let totalWeight = 0;
         try {
           if (typeof workout.getTotalWeight === "function") {
             totalWeight = workout.getTotalWeight();
           } else {
-            // Ручной расчет общего веса
             (workout.exercises || []).forEach((exercise) => {
               if (
                 exercise.type === "STRENGTH" ||
@@ -96,7 +88,6 @@ export default function WorkoutPlanInfoModal({
     }
   };
 
-  // Форматирование даты
   const formatDate = (date) => {
     if (!date) return "Дата не указана";
 

@@ -45,17 +45,14 @@ export default function WorkoutSelectorModal({
     }
   }, [isOpen, workoutPlanService, currentUser]);
 
-  // Новый эффект для сброса и инициализации формы при открытии модального окна
   useEffect(() => {
     if (isOpen) {
-      // Устанавливаем текущую дату при каждом открытии модального окна
       workoutForm.setFieldsValue({
         date: dayjs(),
       });
     }
   }, [isOpen, workoutForm]);
 
-  // Обработка поиска планов
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchText(value);
@@ -71,11 +68,9 @@ export default function WorkoutSelectorModal({
     setFilteredPlans(filtered);
   };
 
-  // Создание пустой тренировки
   const handleStartEmptyWorkout = () => {
     workoutForm.validateFields().then((values) => {
       onStartEmptyWorkout({
-        // Название будет сгенерировано в WorkoutsPage
         date: values.date ? values.date.toDate() : new Date(),
         exercises: [],
       });
@@ -88,20 +83,17 @@ export default function WorkoutSelectorModal({
   // Выбор плана для тренировки
   const handleSelectPlan = (plan) => {
     workoutForm.validateFields().then((values) => {
-      // Проверяем наличие валидного ID плана
       if (!plan || typeof plan.id === "undefined") {
         message.error("Выбран некорректный план тренировки");
         return;
       }
 
-      // Передаем числовой ID (не объект)
       const planId = !isNaN(Number(plan.id)) ? Number(plan.id) : plan.id;
       console.log("Выбран план с ID:", planId, "тип:", typeof planId);
 
       onStartPlanWorkout({
-        // Название будет сгенерировано в WorkoutsPage
         date: values.date ? values.date.toDate() : new Date(),
-        planId: planId, // Только ID плана
+        planId: planId,
         exercises: plan.exercises || [],
       });
 
@@ -110,7 +102,6 @@ export default function WorkoutSelectorModal({
     });
   };
 
-  // Вкладки для выбора типа тренировки
   const items = [
     {
       key: "empty",
@@ -204,7 +195,7 @@ export default function WorkoutSelectorModal({
                             : "Нет упражнений"}
                         </p>
                       </div>
-                      <Button type="primary" size="small">
+                      <Button type="primary" size="large">
                         Выбрать
                       </Button>
                     </div>

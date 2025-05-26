@@ -3,13 +3,13 @@ import ImgCrop from "antd-img-crop";
 const { TextArea } = Input;
 import React, { useState, useEffect } from "react";
 
-export default function ExerciseAdditionModal({ 
-  isOpen, 
-  onClose, 
-  onAddExercise, 
-  exerciseTypes, 
-  isEditMode = false, 
-  initialData = null 
+export default function ExerciseAdditionModal({
+  isOpen,
+  onClose,
+  onAddExercise,
+  exerciseTypes,
+  isEditMode = false,
+  initialData = null,
 }) {
   const [fileList, setFileList] = useState([]);
   const [form] = Form.useForm();
@@ -19,7 +19,7 @@ export default function ExerciseAdditionModal({
     if (isOpen) {
       form.resetFields();
       setFileList([]);
-      
+
       if (isEditMode && initialData) {
         form.setFieldsValue({
           name: initialData.name,
@@ -30,15 +30,15 @@ export default function ExerciseAdditionModal({
           cardioType: initialData.cardioType,
           targetMuscle: initialData.targetMuscle,
         });
-        
+
         setSelectedCategory(initialData.category);
-        
+
         if (initialData.image) {
           setFileList([
             {
-              uid: '-1',
-              name: 'image.png',
-              status: 'done',
+              uid: "-1",
+              name: "image.png",
+              status: "done",
               url: initialData.image,
               thumbUrl: initialData.image,
             },
@@ -75,38 +75,64 @@ export default function ExerciseAdditionModal({
     imgWindow?.document.write(image.outerHTML);
   };
 
+  const getEmbedUrl = (url) => {
+    if (!url) return null;
+
+    try {
+      let videoId = "";
+
+      if (url.includes("youtube.com/watch")) {
+        const urlObj = new URL(url);
+        videoId = urlObj.searchParams.get("v");
+      } else if (url.includes("youtu.be/")) {
+        videoId = url.split("youtu.be/")[1];
+        if (videoId.includes("?")) {
+          videoId = videoId.split("?")[0];
+        }
+      } else if (url.includes("youtube.com/embed/")) {
+        return url;
+      }
+
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+
+      return url;
+    } catch (error) {
+      console.error("Ошибка при обработке URL видео:", error);
+      return null;
+    }
+  };
+
   const handleSubmit = (values) => {
     const formData = {
       ...values,
-      image: fileList.length > 0 ? fileList[0].thumbUrl || fileList[0].url : null,
+      image:
+        fileList.length > 0 ? fileList[0].thumbUrl || fileList[0].url : null,
+      videoId: values.videoId ? getEmbedUrl(values.videoId) : null,
     };
-    
-    // Если это режим редактирования, добавляем ID
+
     if (isEditMode && initialData) {
       formData.id = initialData.id;
     }
-    
-    // Проверка обязательных полей
+
     if (!formData.name) {
       message.error("Пожалуйста, введите название упражнения");
       return;
     }
-    
+
     if (!formData.category) {
       message.error("Пожалуйста, выберите категорию упражнения");
       return;
     }
-    
-    // Для силовых упражнений требуется указать часть тела
+
     if (formData.category === exerciseTypes.STRENGTH && !formData.bodyPart) {
       message.error("Для силовых упражнений необходимо указать часть тела");
       return;
     }
-    
-    // Вызываем колбэк для добавления/обновления упражнения
+
     onAddExercise(formData);
-    
-    // Сбрасываем форму и закрываем модальное окно
+
     form.resetFields();
     setFileList([]);
     onClose();
@@ -114,7 +140,11 @@ export default function ExerciseAdditionModal({
 
   return (
     <Modal
-      title={<p>{isEditMode ? "Редактирование упражнения" : "Добавление упражнения"}</p>}
+      title={
+        <p>
+          {isEditMode ? "Редактирование упражнения" : "Добавление упражнения"}
+        </p>
+      }
       open={isOpen}
       onCancel={onClose}
       footer={[
@@ -147,8 +177,8 @@ export default function ExerciseAdditionModal({
           <Input placeholder="Название" />
         </Form.Item>
 
-        <Form.Item 
-          label="Категория" 
+        <Form.Item
+          label="Категория"
           name="category"
           rules={[
             {
@@ -157,20 +187,24 @@ export default function ExerciseAdditionModal({
             },
           ]}
         >
-          <Select 
+          <Select
             placeholder="Выберите категорию"
             onChange={(value) => setSelectedCategory(value)}
-            disabled={isEditMode} // Запрещаем менять категорию при редактировании
+            disabled={isEditMode}
           >
-            <Select.Option value={exerciseTypes.STRENGTH}>Силовые</Select.Option>
+            <Select.Option value={exerciseTypes.STRENGTH}>
+              Силовые
+            </Select.Option>
             <Select.Option value={exerciseTypes.CARDIO}>Кардио</Select.Option>
-            <Select.Option value={exerciseTypes.ENDURANCE}>Выносливость</Select.Option>
+            <Select.Option value={exerciseTypes.ENDURANCE}>
+              Выносливость
+            </Select.Option>
           </Select>
         </Form.Item>
 
-        {(selectedCategory === exerciseTypes.STRENGTH) && (
-          <Form.Item 
-            label="Часть тела" 
+        {selectedCategory === exerciseTypes.STRENGTH && (
+          <Form.Item
+            label="Часть тела"
             name="bodyPart"
             rules={[
               {
@@ -190,7 +224,7 @@ export default function ExerciseAdditionModal({
           </Form.Item>
         )}
 
-        {(selectedCategory === exerciseTypes.CARDIO) && (
+        {selectedCategory === exerciseTypes.CARDIO && (
           <Form.Item label="Тип кардио" name="cardioType">
             <Select placeholder="Выберите тип кардио">
               <Select.Option value="running">Бег</Select.Option>
@@ -202,7 +236,7 @@ export default function ExerciseAdditionModal({
           </Form.Item>
         )}
 
-        {(selectedCategory === exerciseTypes.ENDURANCE) && (
+        {selectedCategory === exerciseTypes.ENDURANCE && (
           <Form.Item label="Целевая мышца" name="targetMuscle">
             <Select placeholder="Выберите целевую мышцу">
               <Select.Option value="abs">Пресс</Select.Option>
@@ -233,8 +267,12 @@ export default function ExerciseAdditionModal({
           </ImgCrop>
         </Form.Item>
 
-        <Form.Item label="Видео YouTube" name="videoId">
-          <Input placeholder="Введите URL видео" />
+        <Form.Item
+          label="Видео YouTube"
+          name="videoId"
+          help="Вставьте полную ссылку на видео YouTube (например: https://www.youtube.com/watch?v=D3E6BEuROfM)"
+        >
+          <Input placeholder="https://www.youtube.com/watch?v=ID_ВИДЕО" />
         </Form.Item>
       </Form>
     </Modal>

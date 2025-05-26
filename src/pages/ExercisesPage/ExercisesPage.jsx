@@ -4,9 +4,9 @@ import CategoryFilter from "../../components/CategoryFilter/CategoryFilter";
 import { Button, Divider, Empty, message } from "antd";
 import ExerciseAdditionModal from "../../components/AddExerciseModal/ExerciseAdditionModal";
 import ExerciseCard from "../../components/ExerciseCard/ExerciseCard";
-import ExerciseDetailModal from "../../components/ExerciseDetailModal/ExerciseDetailModal";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 import { ExerciseType } from "workout-planning-lib";
+import ExerciseInfoModal from "../../components/ExerciseInfoModal/ExerciseInfoModal";
 
 export default function ExercisesPage() {
   const { exerciseService } = useWorkoutPlanner();
@@ -316,7 +316,7 @@ export default function ExercisesPage() {
         exerciseTypes={ExerciseType}
       />
 
-      <ExerciseDetailModal
+      <ExerciseInfoModal
         isOpen={detailModalOpen}
         onClose={() => setDetailModalOpen(false)}
         exercise={selectedExercise}

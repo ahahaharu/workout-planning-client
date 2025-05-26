@@ -11,40 +11,35 @@ import {
 } from "antd";
 import { Edit, Trash, Info, Calendar, Weight, Clock } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import ExerciseDetailModal from "../ExerciseDetailModal/ExerciseDetailModal";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 import ExerciseInfoModal from "../ExerciseInfoModal/ExerciseInfoModal";
-import WorkoutSessionModal from "../WorkoutSessionModal/WorkoutSessionModal"; // Добавляем импорт
+import WorkoutSessionModal from "../WorkoutSessionModal/WorkoutSessionModal";
 
 export default function WorkoutInfoModal({
   isOpen,
   onClose,
   workout,
   onDelete,
-  onEdit, // Добавляем проп для обработки редактирования
+  onEdit,
 }) {
   const [loading, setLoading] = useState(true);
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [exerciseDetailModalOpen, setExerciseDetailModalOpen] = useState(false);
   const [enhancedWorkout, setEnhancedWorkout] = useState(null);
-  const [editModalOpen, setEditModalOpen] = useState(false); // Состояние для модального окна редактирования
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   const { workoutService, exerciseService } = useWorkoutPlanner();
 
-  // Загрузка и обработка данных тренировки
   useEffect(() => {
     if (isOpen && workout) {
       setLoading(true);
 
       try {
-        // Создаем глубокую копию данных для безопасного обогащения
         const workoutCopy = JSON.parse(JSON.stringify(workout));
 
-        // Обогащаем упражнения полными данными
         if (workoutCopy.exercises && exerciseService) {
           workoutCopy.exercises = workoutCopy.exercises.map((exercise) => {
             try {
-              // Пытаемся получить полные данные упражнения
               const fullExercise = exerciseService.getExerciseById(exercise.id);
 
               if (fullExercise) {
@@ -59,7 +54,6 @@ export default function WorkoutInfoModal({
                     fullExercise.bodyPart ||
                     fullExercise.targetMuscle ||
                     fullExercise.cardioType,
-                  // Сохраняем подходы
                   sets: exercise.sets || [],
                   completedSets: exercise.completedSets || exercise.sets || [],
                 };
@@ -75,7 +69,6 @@ export default function WorkoutInfoModal({
           });
         }
 
-        // Обновляем состояние с обогащенными данными
         setEnhancedWorkout(workoutCopy);
 
         console.log("Обогащенные данные тренировки:", workoutCopy);
@@ -90,7 +83,6 @@ export default function WorkoutInfoModal({
     }
   }, [isOpen, workout, exerciseService]);
 
-  // Функция для отображения типа упражнения
   const getExerciseTypeName = (type) => {
     const typeMap = {
       STRENGTH: "Силовое",
@@ -103,7 +95,6 @@ export default function WorkoutInfoModal({
     return typeMap[type] || type;
   };
 
-  // Функция для отображения части тела на русском
   const getBodyPartName = (bodyPart) => {
     if (!bodyPart) return "";
 
@@ -127,9 +118,7 @@ export default function WorkoutInfoModal({
     return bodyPartMap[bodyPart] || bodyPart;
   };
 
-  // Отображение подходов силового упражнения
   const renderExerciseSets = (exercise) => {
-    // Проверяем наличие подходов в любом из полей
     const sets = exercise.completedSets || exercise.sets || [];
 
     if (!sets || sets.length === 0) {
@@ -161,7 +150,6 @@ export default function WorkoutInfoModal({
     );
   };
 
-  // Обработчик для открытия детальной информации об упражнении
   const handleViewExerciseDetails = (exercise) => {
     setSelectedExercise({
       id: exercise.id,
@@ -178,7 +166,6 @@ export default function WorkoutInfoModal({
     setExerciseDetailModalOpen(true);
   };
 
-  // Функция для форматирования времени
   const formatTime = (seconds) => {
     if (!seconds || seconds === 0) return "Не указано";
 
@@ -192,7 +179,6 @@ export default function WorkoutInfoModal({
     }
   };
 
-  // Обработчик удаления тренировки
   const handleDeleteWorkout = () => {
     if (onDelete && enhancedWorkout) {
       onDelete(enhancedWorkout.id);
@@ -200,11 +186,9 @@ export default function WorkoutInfoModal({
     }
   };
 
-  // Обработчик открытия окна редактирования
   const handleEditWorkout = () => {
     if (!enhancedWorkout) return;
 
-    // Подготавливаем данные тренировки для редактирования
     const workoutForEdit = {
       id: enhancedWorkout.id,
       name: enhancedWorkout.name,
@@ -222,20 +206,14 @@ export default function WorkoutInfoModal({
     };
 
     setEditModalOpen(true);
-    // Временно закрываем информационное окно
-    // onClose(); // Можно не закрывать, чтобы пользователь мог вернуться
   };
 
-  // Обработчик сохранения отредактированной тренировки
   const handleSaveEditedWorkout = (editedWorkoutData) => {
     if (onEdit && enhancedWorkout) {
-      // Вызываем коллбэк для сохранения изменений
       onEdit(enhancedWorkout.id, editedWorkoutData);
 
-      // Закрываем окно редактирования
       setEditModalOpen(false);
 
-      // Обновляем данные в текущем модальном окне
       setEnhancedWorkout({
         ...enhancedWorkout,
         ...editedWorkoutData,
@@ -246,7 +224,6 @@ export default function WorkoutInfoModal({
     }
   };
 
-  // Проверяем наличие данных для отображения
   if (!enhancedWorkout && !loading) {
     return (
       <Modal
@@ -404,14 +381,7 @@ export default function WorkoutInfoModal({
         open={isOpen}
         onCancel={onClose}
         width={700}
-        footer={[
-          <Button key="close" onClick={onClose}>
-            Закрыть
-          </Button>,
-          <Button key="workout" type="primary" onClick={onClose}>
-            Начать тренировку
-          </Button>,
-        ]}
+        footer={null}
       >
         {loading ? (
           <div className="flex justify-center items-center h-60">

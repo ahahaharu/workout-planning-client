@@ -6,7 +6,6 @@ import WorkoutInfoModal from "../WorkoutInfoModal/WorkoutInfoModal";
 export default function WorkoutCard({ workout, onDelete, onEdit }) {
   const [infoModalOpen, setInfoModalOpen] = useState(false);
 
-  // Проверяем и форматируем данные
   const {
     id,
     name,
@@ -16,7 +15,6 @@ export default function WorkoutCard({ workout, onDelete, onEdit }) {
     exercises = [],
   } = workout || {};
 
-  // Отладочный вывод
   console.log("WorkoutCard получил данные:", {
     id,
     name,
@@ -26,21 +24,6 @@ export default function WorkoutCard({ workout, onDelete, onEdit }) {
     rawWorkout: workout,
   });
 
-  // Форматирование времени
-  const formatTime = (seconds) => {
-    if (!seconds) return "Н/Д";
-
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-
-    if (hours > 0) {
-      return `${hours} ч ${minutes} мин`;
-    } else {
-      return `${minutes} мин`;
-    }
-  };
-
-  // Проверка наличия данных перед открытием модального окна
   const handleOpenModal = () => {
     if (!workout) {
       console.error("Попытка открыть информацию с undefined данными");
@@ -76,7 +59,7 @@ export default function WorkoutCard({ workout, onDelete, onEdit }) {
       </div>
 
       <div className="flex-shrink-0">
-        <Button type="primary" onClick={handleOpenModal}>
+        <Button type="primary" onClick={handleOpenModal} size="large">
           Подробнее
         </Button>
       </div>
