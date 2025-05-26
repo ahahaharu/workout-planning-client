@@ -4,18 +4,22 @@ import CategoryFilter from "../../components/CategoryFilter/CategoryFilter";
 import { Button, Divider, Empty, message } from "antd";
 import ExerciseAdditionModal from "../../components/AddExerciseModal/ExerciseAdditionModal";
 import ExerciseCard from "../../components/ExerciseCard/ExerciseCard";
+import ExerciseDetailModal from "../../components/ExerciseDetailModal/ExerciseDetailModal";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 import { ExerciseType } from "workout-planning-lib";
 
 export default function ExercisesPage() {
   const { exerciseService } = useWorkoutPlanner();
-  
+
   const [exercises, setExercises] = useState([]);
   const [filteredExercises, setFilteredExercises] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedBodyParts, setSelectedBodyParts] = useState([]);
-  const [exerciseAdditionModalOpen, setExerciseAdditionModalOpen] = useState(false);
+  const [exerciseAdditionModalOpen, setExerciseAdditionModalOpen] =
+    useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
 
   const exerciseCategories = [
     { id: ExerciseType.STRENGTH, name: "Силовые", count: 0 },
@@ -38,13 +42,13 @@ export default function ExercisesPage() {
         const allExercises = exerciseService.getAllExercises();
         setExercises(allExercises);
         setFilteredExercises(allExercises);
-        
+
         const categoryCounts = {
           [ExerciseType.STRENGTH]: 0,
           [ExerciseType.CARDIO]: 0,
           [ExerciseType.ENDURANCE]: 0,
         };
-        
+
         const bodyPartCounts = {
           back: 0,
           chest: 0,
@@ -53,22 +57,25 @@ export default function ExercisesPage() {
           shoulders: 0,
           legs: 0,
         };
-        
-        allExercises.forEach(exercise => {
+
+        allExercises.forEach((exercise) => {
           if (categoryCounts[exercise.type] !== undefined) {
             categoryCounts[exercise.type]++;
           }
-          
-          if (exercise.type === ExerciseType.STRENGTH && bodyPartCounts[exercise.bodyPart] !== undefined) {
+
+          if (
+            exercise.type === ExerciseType.STRENGTH &&
+            bodyPartCounts[exercise.bodyPart] !== undefined
+          ) {
             bodyPartCounts[exercise.bodyPart]++;
           }
         });
-        
-        exerciseCategories.forEach(category => {
+
+        exerciseCategories.forEach((category) => {
           category.count = categoryCounts[category.id] || 0;
         });
-        
-        exerciseBodyParts.forEach(bodyPart => {
+
+        exerciseBodyParts.forEach((bodyPart) => {
           bodyPart.count = bodyPartCounts[bodyPart.id] || 0;
         });
       } catch (error) {
@@ -97,17 +104,19 @@ export default function ExercisesPage() {
       return;
     }
 
-    const filtered = exercises.filter(exercise => {
-      const categoryMatch = categories.length === 0 || 
-        categories.some(category => exercise.type === category.id);
-      
-      const bodyPartMatch = bodyParts.length === 0 || 
-        (exercise.type === ExerciseType.STRENGTH && 
-          bodyParts.some(part => exercise.bodyPart === part.id));
-      
+    const filtered = exercises.filter((exercise) => {
+      const categoryMatch =
+        categories.length === 0 ||
+        categories.some((category) => exercise.type === category.id);
+
+      const bodyPartMatch =
+        bodyParts.length === 0 ||
+        (exercise.type === ExerciseType.STRENGTH &&
+          bodyParts.some((part) => exercise.bodyPart === part.id));
+
       return categoryMatch && bodyPartMatch;
     });
-    
+
     setFilteredExercises(filtered);
   };
 
@@ -115,7 +124,7 @@ export default function ExercisesPage() {
     if (exerciseService) {
       try {
         let createdExercise;
-        
+
         switch (newExercise.category) {
           case ExerciseType.STRENGTH:
             createdExercise = exerciseService.createStrengthExercise(
@@ -126,7 +135,7 @@ export default function ExercisesPage() {
               newExercise.bodyPart
             );
             break;
-            
+
           case ExerciseType.CARDIO:
             createdExercise = exerciseService.createCardioExercise(
               newExercise.name,
@@ -136,7 +145,7 @@ export default function ExercisesPage() {
               newExercise.cardioType || "general"
             );
             break;
-            
+
           case ExerciseType.ENDURANCE:
             createdExercise = exerciseService.createEnduranceExercise(
               newExercise.name,
@@ -146,16 +155,16 @@ export default function ExercisesPage() {
               newExercise.targetMuscle || newExercise.bodyPart
             );
             break;
-            
+
           default:
             throw new Error("Неизвестный тип упражнения");
         }
-        
+
         const updatedExercises = [...exercises, createdExercise];
         setExercises(updatedExercises);
-        
+
         applyFilters(selectedCategories, selectedBodyParts);
-        
+
         message.success(`Упражнение "${newExercise.name}" добавлено`);
       } catch (error) {
         console.error("Ошибка при добавлении упражнения:", error);
@@ -168,11 +177,13 @@ export default function ExercisesPage() {
     if (exerciseService) {
       try {
         exerciseService.removeExercise(exerciseId);
-        
-        const updatedExercises = exercises.filter(ex => ex.id !== exerciseId);
+
+        const updatedExercises = exercises.filter((ex) => ex.id !== exerciseId);
         setExercises(updatedExercises);
-        setFilteredExercises(filteredExercises.filter(ex => ex.id !== exerciseId));
-        
+        setFilteredExercises(
+          filteredExercises.filter((ex) => ex.id !== exerciseId)
+        );
+
         message.success("Упражнение удалено");
       } catch (error) {
         console.error("Ошибка при удалении упражнения:", error);
@@ -185,16 +196,16 @@ export default function ExercisesPage() {
     if (exerciseService) {
       try {
         const originalExercise = exerciseService.getExerciseById(exerciseId);
-        
+
         if (!originalExercise) {
           throw new Error("Упражнение не найдено");
         }
-        
+
         originalExercise.name = updatedExerciseData.name;
         originalExercise.description = updatedExerciseData.description;
         originalExercise.image = updatedExerciseData.image;
         originalExercise.mediaUrl = updatedExerciseData.videoId;
-        
+
         if (originalExercise.type === "STRENGTH") {
           originalExercise.bodyPart = updatedExerciseData.bodyPart;
         } else if (originalExercise.type === "CARDIO") {
@@ -202,31 +213,40 @@ export default function ExercisesPage() {
         } else if (originalExercise.type === "ENDURANCE") {
           originalExercise.targetMuscle = updatedExerciseData.targetMuscle;
         }
-        
+
         exerciseService._saveExercises();
-        
-        const updatedExercises = exercises.map(ex => 
-          ex.id === exerciseId ? {...ex, 
-            name: updatedExerciseData.name,
-            description: updatedExerciseData.description,
-            image: updatedExerciseData.image,
-            videoUrl: updatedExerciseData.videoId,
-            bodyPart: updatedExerciseData.bodyPart || ex.bodyPart,
-            cardioType: updatedExerciseData.cardioType || ex.cardioType,
-            targetMuscle: updatedExerciseData.targetMuscle || ex.targetMuscle
-          } : ex
+
+        const updatedExercises = exercises.map((ex) =>
+          ex.id === exerciseId
+            ? {
+                ...ex,
+                name: updatedExerciseData.name,
+                description: updatedExerciseData.description,
+                image: updatedExerciseData.image,
+                videoUrl: updatedExerciseData.videoId,
+                bodyPart: updatedExerciseData.bodyPart || ex.bodyPart,
+                cardioType: updatedExerciseData.cardioType || ex.cardioType,
+                targetMuscle:
+                  updatedExerciseData.targetMuscle || ex.targetMuscle,
+              }
+            : ex
         );
-        
+
         setExercises(updatedExercises);
-        
+
         applyFilters(selectedCategories, selectedBodyParts);
-        
+
         message.success(`Упражнение "${updatedExerciseData.name}" обновлено`);
       } catch (error) {
         console.error("Ошибка при обновлении упражнения:", error);
         message.error("Не удалось обновить упражнение");
       }
     }
+  };
+
+  const handleShowDetail = (exercise) => {
+    setSelectedExercise(exercise);
+    setDetailModalOpen(true);
   };
 
   return (
@@ -243,33 +263,37 @@ export default function ExercisesPage() {
           onSelect={handleBodyPartSelect}
         />
       </div>
-      
+
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
         </div>
       ) : filteredExercises.length > 0 ? (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          {filteredExercises.map(exercise => (
-            <ExerciseCard 
-              key={exercise.id} 
+          {filteredExercises.map((exercise) => (
+            <ExerciseCard
+              key={exercise.id}
               exercise={{
                 id: exercise.id,
                 name: exercise.name,
                 image: exercise.image,
                 category: exercise.type,
-                bodyPart: exercise.bodyPart || exercise.targetMuscle || exercise.cardioType,
+                bodyPart:
+                  exercise.bodyPart ||
+                  exercise.targetMuscle ||
+                  exercise.cardioType,
                 videoUrl: exercise.mediaUrl,
                 description: exercise.description,
-              }} 
+              }}
               onDelete={() => handleDeleteExercise(exercise.id)}
               onEdit={handleEditExercise}
+              onShowDetail={() => handleShowDetail(exercise)}
             />
           ))}
         </div>
       ) : (
-        <Empty 
-          description="Нет упражнений, соответствующих выбранным фильтрам" 
+        <Empty
+          description="Нет упражнений, соответствующих выбранным фильтрам"
           className="my-10"
         />
       )}
@@ -290,6 +314,12 @@ export default function ExercisesPage() {
         onClose={() => setExerciseAdditionModalOpen(false)}
         onAddExercise={handleAddExercise}
         exerciseTypes={ExerciseType}
+      />
+
+      <ExerciseDetailModal
+        isOpen={detailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
+        exercise={selectedExercise}
       />
     </PageLayout>
   );

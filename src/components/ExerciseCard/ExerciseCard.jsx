@@ -1,9 +1,11 @@
 import { Button } from "antd";
 import React, { useState } from "react";
 import ExerciseInfoModal from "../ExerciseInfoModal/ExerciseInfoModal";
+import ExerciseDetailModal from "../ExerciseDetailModal/ExerciseDetailModal";
 
 export default function ExerciseCard({ exercise, onDelete, onEdit }) {
   const [infoModalOpen, setInfoModalOpen] = useState(false);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState(null);
 
   const openInfoModal = (exercise) => {
@@ -11,12 +13,17 @@ export default function ExerciseCard({ exercise, onDelete, onEdit }) {
     setInfoModalOpen(true);
   };
 
+  const openDetailModal = (exercise) => {
+    setSelectedExercise(exercise);
+    setDetailModalOpen(true);
+  };
+
   const handleDelete = () => {
     if (onDelete) {
       onDelete(exercise.id);
     }
   };
-  
+
   const handleEdit = (id, updatedExercise) => {
     if (onEdit) {
       onEdit(id, updatedExercise);
@@ -25,35 +32,44 @@ export default function ExerciseCard({ exercise, onDelete, onEdit }) {
 
   const getTypeName = (type) => {
     const typeNames = {
-      "STRENGTH": "Силовые",
-      "CARDIO": "Кардио",
-      "ENDURANCE": "Выносливость"
+      STRENGTH: "Силовые",
+      CARDIO: "Кардио",
+      ENDURANCE: "Выносливость",
     };
     return typeNames[type] || type;
   };
 
-  // Преобразование bodyPart в понятное название
   const getBodyPartName = (bodyPart) => {
-    const bodyPartNames = {
-      "chest": "Грудь",
-      "back": "Спина",
-      "biceps": "Бицепс",
-      "triceps": "Трицепс",
-      "shoulders": "Плечи",
-      "legs": "Ноги",
-      "abs": "Пресс",
-      "arms": "Руки",
-      "general": "Общая"
+    if (!bodyPart) return "";
+
+    const bodyPartMap = {
+      chest: "Грудь",
+      back: "Спина",
+      biceps: "Бицепс",
+      triceps: "Трицепс",
+      shoulders: "Плечи",
+      legs: "Ноги",
+      abs: "Пресс",
+      arms: "Руки",
+      general: "Общая",
+      forearms: "Предплечья",
+      calves: "Икры",
+      glutes: "Ягодицы",
+      quads: "Четырехглавая",
+      hamstrings: "Задняя поверхность бедра",
     };
-    return bodyPartNames[bodyPart] || bodyPart;
+
+    return bodyPartMap[bodyPart] || bodyPart;
   };
 
   return (
-    <div className="flex justify-between w-full p-4 border rounded-xl border-indigo-300">
-      <div className="flex gap-4">
-        <div className="w-22 h-22 rounded overflow-hidden">
+    <div className="flex justify-between gap-5 w-full p-4 border rounded-xl border-indigo-300">
+      <div className="flex gap-5">
+        <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100">
           <img
-            src={exercise.image || "https://via.placeholder.com/100?text=No+Image"}
+            src={
+              exercise.image || "https://via.placeholder.com/100?text=No+Image"
+            }
             alt={exercise.name}
             className="w-full h-full object-cover"
           />
@@ -61,7 +77,8 @@ export default function ExerciseCard({ exercise, onDelete, onEdit }) {
         <div className="flex flex-col justify-center">
           <h1 className="text-xl">{exercise.name}</h1>
           <p className="text-gray-400">
-            {getTypeName(exercise.category)} · {getBodyPartName(exercise.bodyPart)}
+            {getTypeName(exercise.category)} ·{" "}
+            {getBodyPartName(exercise.bodyPart)}
           </p>
         </div>
       </div>
@@ -73,8 +90,8 @@ export default function ExerciseCard({ exercise, onDelete, onEdit }) {
               id: exercise.id,
               name: exercise.name,
               image: exercise.image,
-              category: getTypeName(exercise.category),
-              bodyPart: getBodyPartName(exercise.bodyPart),
+              category: exercise.category,
+              bodyPart: exercise.bodyPart,
               videoUrl: exercise.videoUrl,
               description: exercise.description,
             })
@@ -87,6 +104,7 @@ export default function ExerciseCard({ exercise, onDelete, onEdit }) {
           Добавить в программу
         </Button>
       </div>
+
       <ExerciseInfoModal
         isOpen={infoModalOpen}
         onClose={() => setInfoModalOpen(false)}

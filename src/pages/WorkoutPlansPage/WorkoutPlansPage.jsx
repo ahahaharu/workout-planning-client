@@ -5,6 +5,7 @@ import WorkoutPlanCard from "../../components/WorkoutPlanCard/WorkoutPlanCard";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 import { useAuth } from "../../context/AuthContext";
 import WorkoutPlanEditorModal from "../../components/WorkoutPlanEditorModal/WorkoutPlanEditorModal";
+import { useNavigate } from "react-router-dom";
 
 export default function WorkoutPlansPage() {
   const [editorModalOpen, setEditorModalOpen] = useState(false);
@@ -13,6 +14,7 @@ export default function WorkoutPlansPage() {
   const [editingPlan, setEditingPlan] = useState(null);
   const { workoutPlanService, exerciseService } = useWorkoutPlanner();
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadWorkoutPlans();
@@ -178,10 +180,18 @@ export default function WorkoutPlansPage() {
     }
   };
 
+  const handleStartEmptyWorkout = () => {
+    navigate("/workouts"); // Переход на страницу тренировок
+  };
+
   return (
     <PageLayout title="Программы тренировок">
       <div className="w-full flex justify-center mb-5 gap-4">
-        <Button size="large" className="w-1/2">
+        <Button
+          size="large"
+          className="w-1/2"
+          onClick={handleStartEmptyWorkout}
+        >
           Начать пустую тренировку
         </Button>
         <Button
