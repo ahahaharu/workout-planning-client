@@ -34,7 +34,6 @@ export default function AuthPage() {
       message.success("Вход выполнен успешно!");
       navigate("/workouts");
     } catch (error) {
-      // Более детальная обработка ошибок
       if (error.message.includes("не существует")) {
         setLoginError("Пользователя с таким email не существует");
       } else if (error.message.includes("Неверный пароль")) {
@@ -52,14 +51,12 @@ export default function AuthPage() {
     setIsLoading(true);
     setRegisterError("");
 
-    // Проверка данных перед отправкой
     if (!email || !password || !name || !currentWeight || !height) {
       setRegisterError("Пожалуйста, заполните все поля");
       setIsLoading(false);
       return;
     }
 
-    // Валидация email с помощью регулярного выражения
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setRegisterError("Пожалуйста, введите корректный email");
@@ -67,7 +64,6 @@ export default function AuthPage() {
       return;
     }
 
-    // Валидация числовых значений
     if (isNaN(Number(currentWeight)) || Number(currentWeight) <= 0) {
       setRegisterError("Вес должен быть положительным числом");
       setIsLoading(false);
@@ -85,7 +81,6 @@ export default function AuthPage() {
       message.success("Регистрация выполнена успешно!");
       navigate("/workouts");
     } catch (error) {
-      // Более детальная обработка ошибок регистрации
       if (error.message.includes("уже существует")) {
         setRegisterError("Пользователь с таким email уже существует");
       } else {
@@ -216,8 +211,91 @@ export default function AuthPage() {
                     />
                   </div>
 
-                  {/* Остальные поля формы без изменений */}
-                  {/* ... */}
+                  <div>
+                    <label
+                      className={`block text-sm font-medium ${
+                        isDarkMode ? "text-white" : "text-gray-700"
+                      }`}
+                    >
+                      Email
+                    </label>
+                    <Input
+                      prefix={<Mail size={18} className="text-gray-400 mr-2" />}
+                      type="email"
+                      placeholder="Ваш email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      size="large"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      className={`block text-sm font-medium ${
+                        isDarkMode ? "text-white" : "text-gray-700"
+                      }`}
+                    >
+                      Пароль
+                    </label>
+                    <Input.Password
+                      prefix={<Lock size={18} className="text-gray-400 mr-2" />}
+                      placeholder="Ваш пароль"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      size="large"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      className={`block text-sm font-medium ${
+                        isDarkMode ? "text-white" : "text-gray-700"
+                      }`}
+                    >
+                      Вес (кг)
+                    </label>
+                    <Input
+                      prefix={<Scale size={18} className="text-gray-400 mr-2" />}
+                      type="number"
+                      placeholder="Ваш текущий вес"
+                      value={currentWeight}
+                      onChange={(e) => setCurrentWeight(e.target.value)}
+                      required
+                      size="large"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      className={`block text-sm font-medium ${
+                        isDarkMode ? "text-white" : "text-gray-700"
+                      }`}
+                    >
+                      Рост (см)
+                    </label>
+                    <Input
+                      prefix={<Ruler size={18} className="text-gray-400 mr-2" />}
+                      type="number"
+                      placeholder="Ваш рост"
+                      value={height}
+                      onChange={(e) => setHeight(e.target.value)}
+                      required
+                      size="large"
+                    />
+                  </div>
+
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={isLoading}
+                    icon={<UserPlus size={18} />}
+                    size="large"
+                    block
+                  >
+                    Зарегистрироваться
+                  </Button>
                 </form>
               ),
             },
