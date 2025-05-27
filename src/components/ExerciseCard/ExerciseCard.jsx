@@ -62,7 +62,7 @@ export default function ExerciseCard({ exercise, onDelete, onEdit }) {
   };
 
   return (
-    <div className="flex justify-between gap-5 w-full p-4 border rounded-xl border-indigo-300">
+    <div className="flex justify-between items-center gap-5 w-full p-4 border rounded-xl border-indigo-300">
       <div className="flex gap-5">
         <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100">
           <img
@@ -99,9 +99,13 @@ export default function ExerciseCard({ exercise, onDelete, onEdit }) {
           Информация
         </Button>
 
-        <Button size="large" type="primary">
-          Добавить в программу
-        </Button>
+        {/* <Button
+          size="large"
+          type="primary"
+          onClick={() => handleEdit()}
+        >
+          Редактировать
+        </Button> */}
       </div>
 
       <ExerciseInfoModal

@@ -3,7 +3,7 @@ import { Edit, Trash, Calendar, Weight, BarChart2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import ExerciseAdditionModal from "../AddExerciseModal/ExerciseAdditionModal";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
-import { useAuth } from "../../context/AuthContext"; // Добавляем импорт Auth контекста
+import { useAuth } from "../../context/AuthContext";
 
 export default function ExerciseInfoModal({
   isOpen,
@@ -18,7 +18,7 @@ export default function ExerciseInfoModal({
   const [historyLoading, setHistoryLoading] = useState(false);
 
   const { workoutService } = useWorkoutPlanner();
-  const { currentUser } = useAuth(); // Получаем текущего пользователя
+  const { currentUser } = useAuth();
 
   const getTranslatedCategory = (categoryCode) => {
     const categoryMap = {
@@ -62,10 +62,8 @@ export default function ExerciseInfoModal({
     setHistoryLoading(true);
 
     try {
-      // Получаем тренировки пользователя
       const userWorkouts = workoutService.getWorkoutsForUser(currentUser.id);
 
-      // Дополнительная проверка на ownerId
       const filteredWorkouts = userWorkouts.filter(
         (workout) => workout.ownerId === currentUser.id
       );
@@ -140,35 +138,28 @@ export default function ExerciseInfoModal({
     }
   };
 
-  // Функция для преобразования URL видео YouTube в формат для встраивания
   const getEmbedUrl = (url) => {
     if (!url) return null;
 
     try {
-      // Для ссылок вида https://www.youtube.com/watch?v=ID
       let videoId = "";
 
       if (url.includes("youtube.com/watch")) {
         const urlObj = new URL(url);
         videoId = urlObj.searchParams.get("v");
-      }
-      // Для ссылок вида https://youtu.be/ID
-      else if (url.includes("youtu.be/")) {
+      } else if (url.includes("youtu.be/")) {
         videoId = url.split("youtu.be/")[1];
         if (videoId.includes("?")) {
           videoId = videoId.split("?")[0];
         }
-      }
-      // Если это уже ссылка для встраивания
-      else if (url.includes("youtube.com/embed/")) {
-        return url; // Уже в правильном формате
+      } else if (url.includes("youtube.com/embed/")) {
+        return url;
       }
 
       if (videoId) {
         return `https://www.youtube.com/embed/${videoId}`;
       }
 
-      // Если формат не распознан, возвращаем исходную ссылку
       return url;
     } catch (error) {
       console.error("Ошибка при обработке URL видео:", error);
