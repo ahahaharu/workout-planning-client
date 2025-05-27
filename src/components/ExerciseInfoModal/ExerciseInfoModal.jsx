@@ -3,6 +3,7 @@ import { Edit, Trash, Calendar, Weight, BarChart2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import ExerciseAdditionModal from "../AddExerciseModal/ExerciseAdditionModal";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
+import { useAuth } from "../../context/AuthContext"; // Добавляем импорт Auth контекста
 
 export default function ExerciseInfoModal({
   isOpen,
@@ -17,6 +18,7 @@ export default function ExerciseInfoModal({
   const [historyLoading, setHistoryLoading] = useState(false);
 
   const { workoutService } = useWorkoutPlanner();
+  const { currentUser } = useAuth(); // Получаем текущего пользователя
 
   const getTranslatedCategory = (categoryCode) => {
     const categoryMap = {
@@ -49,20 +51,26 @@ export default function ExerciseInfoModal({
   }, [isOpen]);
 
   useEffect(() => {
-    if (isOpen && exercise && workoutService) {
+    if (isOpen && exercise && workoutService && currentUser) {
       loadExerciseHistory();
     }
-  }, [isOpen, exercise, workoutService]);
+  }, [isOpen, exercise, workoutService, currentUser]);
 
   const loadExerciseHistory = () => {
-    if (!exercise || !workoutService) return;
+    if (!exercise || !workoutService || !currentUser) return;
 
     setHistoryLoading(true);
 
     try {
-      const allWorkouts = workoutService.getAllWorkouts();
+      // Получаем тренировки пользователя
+      const userWorkouts = workoutService.getWorkoutsForUser(currentUser.id);
 
-      const relevantWorkouts = allWorkouts.filter(
+      // Дополнительная проверка на ownerId
+      const filteredWorkouts = userWorkouts.filter(
+        (workout) => workout.ownerId === currentUser.id
+      );
+
+      const relevantWorkouts = filteredWorkouts.filter(
         (workout) =>
           workout.exercises &&
           workout.exercises.some((ex) => ex.id === exercise.id)
