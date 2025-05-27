@@ -29,6 +29,7 @@ import {
   TrophyOutlined,
 } from "@ant-design/icons";
 import { Dumbbell } from "lucide-react";
+import DateRangeFilter from "../DateRangeFilter/DateRangeFilter";
 
 const { Option } = Select;
 
@@ -39,6 +40,9 @@ export default function ExerciseStatistics({
   statsLoading,
   onExerciseSelect,
   formatDate,
+  dateRange,
+  onDateRangeChange,
+  onDateRangeReset,
 }) {
   const [selectedExerciseId, setSelectedExerciseId] = useState(null);
 
@@ -69,34 +73,45 @@ export default function ExerciseStatistics({
     );
   }
 
-  const exerciseSelector = (
-    <div className="mb-4">
-      <div className="flex items-center">
-        <Dumbbell size={18} className="mr-2 text-indigo-500" />
-        <span className="mr-2">Выберите упражнение:</span>
-        <Select
-          placeholder="Выберите упражнение"
-          style={{ width: 300 }}
-          onChange={handleExerciseSelect}
-          value={selectedExerciseId}
-          optionFilterProp="children"
-          showSearch
-        >
-          {exercises.map((exercise) => (
-            <Option key={exercise.id} value={exercise.id}>
-              {exercise.name}{" "}
-              {exercise.bodyPart ? `(${exercise.bodyPart})` : ""}
-            </Option>
-          ))}
-        </Select>
+  // Секция выбора упражнения и фильтра дат
+  const filtersSection = (
+    <>
+      <div className="mb-4">
+        <div className="flex items-center">
+          <Dumbbell size={18} className="mr-2 text-indigo-500" />
+          <span className="mr-2">Выберите упражнение:</span>
+          <Select
+            placeholder="Выберите упражнение"
+            style={{ width: 300 }}
+            onChange={handleExerciseSelect}
+            value={selectedExerciseId}
+            optionFilterProp="children"
+            showSearch
+          >
+            {exercises.map((exercise) => (
+              <Option key={exercise.id} value={exercise.id}>
+                {exercise.name}{" "}
+                {exercise.bodyPart ? `(${exercise.bodyPart})` : ""}
+              </Option>
+            ))}
+          </Select>
+        </div>
       </div>
-    </div>
+
+      {selectedExerciseId && (
+        <DateRangeFilter
+          value={dateRange}
+          onChange={onDateRangeChange}
+          onReset={onDateRangeReset}
+        />
+      )}
+    </>
   );
 
   if (statsLoading) {
     return (
       <div>
-        {exerciseSelector}
+        {filtersSection}
         <div className="flex justify-center items-center h-64">
           <Spin size="large" />
         </div>
@@ -112,12 +127,12 @@ export default function ExerciseStatistics({
   ) {
     return (
       <div>
-        {exerciseSelector}
+        {filtersSection}
         <Card>
           <Empty
             description={
               selectedExerciseId
-                ? "Нет данных для этого упражнения"
+                ? "Нет данных для этого упражнения в выбранном периоде"
                 : "Выберите упражнение для просмотра статистики"
             }
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -539,7 +554,7 @@ export default function ExerciseStatistics({
 
   return (
     <div>
-      {exerciseSelector}
+      {filtersSection}
 
       <Card className="mb-6">
         <div className="mb-4">

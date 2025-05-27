@@ -27,6 +27,7 @@ export default function StatisticsPage() {
   // Разделяем диапазоны дат для каждого раздела
   const [weightDateRange, setWeightDateRange] = useState([null, null]);
   const [workoutDateRange, setWorkoutDateRange] = useState([null, null]);
+  const [exerciseDateRange, setExerciseDateRange] = useState([null, null]);
 
   const {
     workoutPlanner,
@@ -104,13 +105,30 @@ export default function StatisticsPage() {
       return;
     }
 
-    setSelectedExerciseId(exerciseId);
+    // Получаем даты из диапазона, если они установлены
+    const startDate = exerciseDateRange[0]
+      ? exerciseDateRange[0].toDate()
+      : null;
+    const endDate = exerciseDateRange[1] ? exerciseDateRange[1].toDate() : null;
+
+    loadExerciseStats(exerciseId, startDate, endDate);
+  };
+
+  const loadExerciseStats = (exerciseId, startDate = null, endDate = null) => {
+    if (!exerciseId || !statisticsService || !currentUser) {
+      setExerciseStats(null);
+      return;
+    }
+
     setExerciseStatsLoading(true);
+    setSelectedExerciseId(exerciseId);
 
     try {
       const stats = statisticsService.getExerciseProgress(
         currentUser.id,
-        exerciseId
+        exerciseId,
+        startDate,
+        endDate
       );
 
       console.log("Загружена статистика упражнения:", stats);
@@ -121,6 +139,32 @@ export default function StatisticsPage() {
       setExerciseStats(null);
     } finally {
       setExerciseStatsLoading(false);
+    }
+  };
+
+  const handleExerciseDateRangeChange = (dates) => {
+    if (!dates || dates.length !== 2) {
+      setExerciseDateRange([null, null]);
+      if (selectedExerciseId) {
+        loadExerciseStats(selectedExerciseId);
+      }
+      return;
+    }
+
+    const [start, end] = dates;
+    setExerciseDateRange([start, end]);
+
+    if (selectedExerciseId) {
+      const startDate = start ? start.toDate() : null;
+      const endDate = end ? end.toDate() : null;
+      loadExerciseStats(selectedExerciseId, startDate, endDate);
+    }
+  };
+
+  const resetExerciseDateFilter = () => {
+    setExerciseDateRange([null, null]);
+    if (selectedExerciseId) {
+      loadExerciseStats(selectedExerciseId);
     }
   };
 
@@ -399,6 +443,9 @@ export default function StatisticsPage() {
         statsLoading={exerciseStatsLoading}
         onExerciseSelect={handleExerciseSelect}
         formatDate={formatDate}
+        dateRange={exerciseDateRange}
+        onDateRangeChange={handleExerciseDateRangeChange}
+        onDateRangeReset={resetExerciseDateFilter}
       />
 
       <WeightUpdateModal
