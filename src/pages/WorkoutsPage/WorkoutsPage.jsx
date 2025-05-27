@@ -328,11 +328,47 @@ export default function WorkoutsPage() {
 
         console.log("Создана новая тренировка:", workout);
 
+        // Получаем ID существующих упражнений в тренировке (если они уже добавлены из плана)
+        const existingExerciseIds = workout.exercises
+          ? workout.exercises.map((e) => e.id)
+          : [];
+
         const exercisesWithData = [];
 
         for (const exercise of workoutData.exercises) {
-          workoutService.addExerciseToWorkout(workout.id, exercise.id);
+          // Добавляем упражнение только если его еще нет в тренировке
+          if (!existingExerciseIds.includes(exercise.id)) {
+            workoutService.addExerciseToWorkout(workout.id, exercise.id);
+          }
 
+          // Очищаем существующие данные перед добавлением новых
+          try {
+            if (exercise.type === "STRENGTH" || exercise.type === "Strength") {
+              workoutService.clearExerciseSets(workout.id, exercise.id);
+            } else if (
+              exercise.type === "CARDIO" ||
+              exercise.type === "Cardio"
+            ) {
+              workoutService.clearExerciseCardioSessions(
+                workout.id,
+                exercise.id
+              );
+            } else if (
+              exercise.type === "ENDURANCE" ||
+              exercise.type === "Endurance"
+            ) {
+              workoutService.clearExerciseEnduranceSessions(
+                workout.id,
+                exercise.id
+              );
+            }
+          } catch (error) {
+            console.error(
+              `Ошибка при очистке данных упражнения: ${error.message}`
+            );
+          }
+
+          // Добавление подходов/сессий для силовых упражнений
           if (
             (exercise.type === "STRENGTH" || exercise.type === "Strength") &&
             exercise.completedSets &&
@@ -360,7 +396,9 @@ export default function WorkoutsPage() {
               sets: sets,
               sessions: [],
             });
-          } else if (
+          }
+          // Добавление сессий для кардио упражнений
+          else if (
             (exercise.type === "CARDIO" || exercise.type === "Cardio") &&
             exercise.completedSessions &&
             exercise.completedSessions.length > 0
@@ -388,7 +426,9 @@ export default function WorkoutsPage() {
               sets: [],
               sessions: sessions,
             });
-          } else if (
+          }
+          // Добавление сессий для упражнений на выносливость
+          else if (
             (exercise.type === "ENDURANCE" || exercise.type === "Endurance") &&
             exercise.completedSessions &&
             exercise.completedSessions.length > 0
@@ -418,6 +458,7 @@ export default function WorkoutsPage() {
           }
         }
 
+        // Подготовка объекта тренировки для отображения
         const displayWorkout = {
           id: workout.id,
           name: workoutName,
@@ -425,12 +466,13 @@ export default function WorkoutsPage() {
           rawDate: workout.date,
           exercises: exercisesWithData,
           totalWeight: workoutData.totalWeight || 0,
+          totalDistance: workoutData.totalDistance || 0,
+          totalDuration: workoutData.totalDuration || 0,
+          totalCalories: workoutData.totalCalories || 0,
           planId: planId || null,
           description: workoutData.description || "",
           plan: planId ? { id: planId } : null,
         };
-
-        console.log("Готовая тренировка для отображения:", displayWorkout);
 
         setWorkouts((prevWorkouts) => [displayWorkout, ...prevWorkouts]);
 
@@ -506,9 +548,45 @@ export default function WorkoutsPage() {
           existingWorkout.exercises = [];
         }
 
-        for (const exercise of editedWorkoutData.exercises) {
-          workoutService.addExerciseToWorkout(workoutId, exercise.id);
+        // Получаем ID существующих упражнений после очистки (должен быть пустой массив)
+        const existingExerciseIds = existingWorkout.exercises
+          ? existingWorkout.exercises.map((e) => e.id)
+          : [];
 
+        for (const exercise of editedWorkoutData.exercises) {
+          // Добавляем упражнение только если его еще нет в тренировке
+          if (!existingExerciseIds.includes(exercise.id)) {
+            workoutService.addExerciseToWorkout(workoutId, exercise.id);
+          }
+
+          // Очищаем существующие данные перед добавлением новых
+          try {
+            if (exercise.type === "STRENGTH" || exercise.type === "Strength") {
+              workoutService.clearExerciseSets(workoutId, exercise.id);
+            } else if (
+              exercise.type === "CARDIO" ||
+              exercise.type === "Cardio"
+            ) {
+              workoutService.clearExerciseCardioSessions(
+                workoutId,
+                exercise.id
+              );
+            } else if (
+              exercise.type === "ENDURANCE" ||
+              exercise.type === "Endurance"
+            ) {
+              workoutService.clearExerciseEnduranceSessions(
+                workoutId,
+                exercise.id
+              );
+            }
+          } catch (error) {
+            console.error(
+              `Ошибка при очистке данных упражнения: ${error.message}`
+            );
+          }
+
+          // Добавление подходов/сессий для силовых упражнений
           if (
             (exercise.type === "STRENGTH" || exercise.type === "Strength") &&
             (exercise.completedSets || exercise.sets)
@@ -531,7 +609,9 @@ export default function WorkoutsPage() {
                 }
               }
             }
-          } else if (
+          }
+          // Добавление сессий для кардио упражнений
+          else if (
             (exercise.type === "CARDIO" || exercise.type === "Cardio") &&
             exercise.completedSessions
           ) {
@@ -554,7 +634,9 @@ export default function WorkoutsPage() {
                 }
               }
             }
-          } else if (
+          }
+          // Добавление сессий для упражнений на выносливость
+          else if (
             (exercise.type === "ENDURANCE" || exercise.type === "Endurance") &&
             exercise.completedSessions
           ) {
@@ -593,6 +675,9 @@ export default function WorkoutsPage() {
                   rawDate: editedWorkoutData.date,
                   exercises: editedWorkoutData.exercises,
                   totalWeight: editedWorkoutData.totalWeight,
+                  totalDistance: editedWorkoutData.totalDistance,
+                  totalDuration: editedWorkoutData.totalDuration,
+                  totalCalories: editedWorkoutData.totalCalories,
                   description: editedWorkoutData.description,
                 }
               : workout

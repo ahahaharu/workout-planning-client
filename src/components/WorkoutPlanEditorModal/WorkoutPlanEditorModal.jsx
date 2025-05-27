@@ -14,6 +14,7 @@ import {
   Collapse,
   Popconfirm,
   message,
+  Tooltip,
 } from "antd";
 import {
   Plus,
@@ -24,6 +25,10 @@ import {
   Search,
   Check,
   Edit,
+  Clock,
+  Navigation,
+  Flame,
+  BarChart,
 } from "lucide-react";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 
@@ -61,10 +66,24 @@ export default function WorkoutPlanEditorModal({
         let planExercises = [];
         if (workoutPlan && workoutPlan.exercises) {
           planExercises = [...workoutPlan.exercises].map((ex) => {
-            return {
-              ...ex,
-              sets: ex.sets || [],
-            };
+            // Обрабатываем разные типы упражнений
+            if (ex.type === "STRENGTH" || ex.type === "Strength") {
+              return {
+                ...ex,
+                sets: ex.sets || [],
+              };
+            } else if (ex.type === "CARDIO" || ex.type === "Cardio") {
+              return {
+                ...ex,
+                sessions: ex.sessions || [],
+              };
+            } else if (ex.type === "ENDURANCE" || ex.type === "Endurance") {
+              return {
+                ...ex,
+                sessions: ex.sessions || [],
+              };
+            }
+            return ex;
           });
         }
         setExercises(planExercises);
@@ -93,15 +112,31 @@ export default function WorkoutPlanEditorModal({
         name: workoutPlan.name,
         description: workoutPlan.description || "",
       });
-    } else if (isOpen && !workoutPlan) {
-      setPlanName("");
-      setPlanDescription("");
-      setExercises([]);
 
-      form.setFieldsValue({
-        name: "",
-        description: "",
-      });
+      let planExercises = [];
+      if (workoutPlan && workoutPlan.exercises) {
+        planExercises = [...workoutPlan.exercises].map((ex) => {
+          // Обрабатываем разные типы упражнений
+          if (ex.type === "STRENGTH" || ex.type === "Strength") {
+            return {
+              ...ex,
+              sets: ex.sets || [],
+            };
+          } else if (ex.type === "CARDIO" || ex.type === "Cardio") {
+            return {
+              ...ex,
+              sessions: ex.sessions || [],
+            };
+          } else if (ex.type === "ENDURANCE" || ex.type === "Endurance") {
+            return {
+              ...ex,
+              sessions: ex.sessions || [],
+            };
+          }
+          return ex;
+        });
+      }
+      setExercises(planExercises);
     }
   }, [isOpen, workoutPlan, form]);
 
@@ -122,16 +157,28 @@ export default function WorkoutPlanEditorModal({
   };
 
   const handleAddExercise = (exercise) => {
-    const initialSets =
-      exercise.type === "STRENGTH" || exercise.type === "Strength"
-        ? [{ reps: 10, weight: 20 }]
-        : [];
+    let initialData = {};
+
+    // Подготавливаем начальные данные в зависимости от типа упражнения
+    if (isStrengthExercise(exercise)) {
+      initialData = {
+        sets: [{ reps: 10, weight: 20 }],
+      };
+    } else if (isCardioExercise(exercise)) {
+      initialData = {
+        sessions: [{ duration: 30, distance: 5, caloriesBurned: 300 }],
+      };
+    } else if (isEnduranceExercise(exercise)) {
+      initialData = {
+        sessions: [{ duration: 60, difficulty: 7 }],
+      };
+    }
 
     const newExercises = [
       ...exercises,
       {
         ...exercise,
-        sets: initialSets,
+        ...initialData,
       },
     ];
     setExercises(newExercises);
@@ -144,9 +191,19 @@ export default function WorkoutPlanEditorModal({
       )
     );
 
-    if (exercise.type === "STRENGTH" || exercise.type === "Strength") {
+    if (isStrengthExercise(exercise)) {
       message.success(
         "Упражнение добавлено. Теперь вы можете настроить подходы.",
+        1
+      );
+    } else if (isCardioExercise(exercise)) {
+      message.success(
+        "Кардио-упражнение добавлено. Настройте параметры сессии.",
+        1
+      );
+    } else if (isEnduranceExercise(exercise)) {
+      message.success(
+        "Упражнение на выносливость добавлено. Настройте параметры сессии.",
         1
       );
     }
@@ -181,6 +238,7 @@ export default function WorkoutPlanEditorModal({
     }
   };
 
+  // Функции для работы с силовыми упражнениями (подходы)
   const handleAddSet = (exerciseId) => {
     const newExercises = exercises.map((ex) => {
       if (ex.id === exerciseId) {
@@ -224,6 +282,116 @@ export default function WorkoutPlanEditorModal({
         });
 
         return { ...ex, sets: newSets };
+      }
+      return ex;
+    });
+
+    setExercises(newExercises);
+  };
+
+  // Функции для работы с кардио упражнениями (сессии)
+  const handleAddCardioSession = (exerciseId) => {
+    const newExercises = exercises.map((ex) => {
+      if (ex.id === exerciseId) {
+        const lastSession =
+          ex.sessions && ex.sessions.length > 0
+            ? ex.sessions[ex.sessions.length - 1]
+            : { duration: 30, distance: 5, caloriesBurned: 300 };
+
+        return {
+          ...ex,
+          sessions: [...(ex.sessions || []), { ...lastSession }],
+        };
+      }
+      return ex;
+    });
+
+    setExercises(newExercises);
+  };
+
+  const handleRemoveCardioSession = (exerciseId, sessionIndex) => {
+    const newExercises = exercises.map((ex) => {
+      if (ex.id === exerciseId) {
+        const newSessions = [...(ex.sessions || [])];
+        newSessions.splice(sessionIndex, 1);
+        return { ...ex, sessions: newSessions };
+      }
+      return ex;
+    });
+
+    setExercises(newExercises);
+  };
+
+  const handleUpdateCardioSession = (
+    exerciseId,
+    sessionIndex,
+    field,
+    value
+  ) => {
+    const newExercises = exercises.map((ex) => {
+      if (ex.id === exerciseId) {
+        const newSessions = ex.sessions.map((session, idx) => {
+          if (idx === sessionIndex) {
+            return { ...session, [field]: value };
+          }
+          return session;
+        });
+        return { ...ex, sessions: newSessions };
+      }
+      return ex;
+    });
+
+    setExercises(newExercises);
+  };
+
+  // Функции для работы с упражнениями на выносливость (сессии)
+  const handleAddEnduranceSession = (exerciseId) => {
+    const newExercises = exercises.map((ex) => {
+      if (ex.id === exerciseId) {
+        const lastSession =
+          ex.sessions && ex.sessions.length > 0
+            ? ex.sessions[ex.sessions.length - 1]
+            : { duration: 60, difficulty: 7 };
+
+        return {
+          ...ex,
+          sessions: [...(ex.sessions || []), { ...lastSession }],
+        };
+      }
+      return ex;
+    });
+
+    setExercises(newExercises);
+  };
+
+  const handleRemoveEnduranceSession = (exerciseId, sessionIndex) => {
+    const newExercises = exercises.map((ex) => {
+      if (ex.id === exerciseId) {
+        const newSessions = [...(ex.sessions || [])];
+        newSessions.splice(sessionIndex, 1);
+        return { ...ex, sessions: newSessions };
+      }
+      return ex;
+    });
+
+    setExercises(newExercises);
+  };
+
+  const handleUpdateEnduranceSession = (
+    exerciseId,
+    sessionIndex,
+    field,
+    value
+  ) => {
+    const newExercises = exercises.map((ex) => {
+      if (ex.id === exerciseId) {
+        const newSessions = ex.sessions.map((session, idx) => {
+          if (idx === sessionIndex) {
+            return { ...session, [field]: value };
+          }
+          return session;
+        });
+        return { ...ex, sessions: newSessions };
       }
       return ex;
     });
@@ -292,8 +460,259 @@ export default function WorkoutPlanEditorModal({
     return bodyPartMap[bodyPart] || bodyPart;
   };
 
+  // Функции для определения типа упражнения
   const isStrengthExercise = (exercise) => {
     return exercise.type === "STRENGTH" || exercise.type === "Strength";
+  };
+
+  const isCardioExercise = (exercise) => {
+    return exercise.type === "CARDIO" || exercise.type === "Cardio";
+  };
+
+  const isEnduranceExercise = (exercise) => {
+    return exercise.type === "ENDURANCE" || exercise.type === "Endurance";
+  };
+
+  // Рендеринг кардио сессий
+  const renderCardioSessions = (exercise) => {
+    return (
+      <div className="mt-2">
+        <div className="flex justify-between items-center mb-2">
+          <p className="font-medium">Сессии:</p>
+          <Button
+            type="primary"
+            size="small"
+            icon={<Plus size={14} />}
+            onClick={() => handleAddCardioSession(exercise.id)}
+          >
+            Добавить сессию
+          </Button>
+        </div>
+
+        {!exercise.sessions || exercise.sessions.length === 0 ? (
+          <div className="bg-gray-50 rounded-lg p-4 text-center">
+            <p className="text-gray-500 text-sm mb-2">Нет сессий</p>
+            <Button
+              type="primary"
+              size="small"
+              onClick={() => handleAddCardioSession(exercise.id)}
+            >
+              Добавить первую сессию
+            </Button>
+          </div>
+        ) : (
+          <div className="bg-gray-50 rounded-lg p-2">
+            <div className="grid grid-cols-16 mb-2 font-semibold text-sm">
+              <div className="col-span-2 text-center">№</div>
+              <div className="col-span-4 text-center">
+                <Tooltip title="Длительность в минутах">
+                  <span className="flex items-center justify-center">
+                    <Clock size={14} className="mr-1" /> Время
+                  </span>
+                </Tooltip>
+              </div>
+              <div className="col-span-4 text-center">
+                <Tooltip title="Дистанция в километрах">
+                  <span className="flex items-center justify-center">
+                    <Navigation size={14} className="mr-1" /> Дист.
+                  </span>
+                </Tooltip>
+              </div>
+              <div className="col-span-4 text-center">
+                <Tooltip title="Калории">
+                  <span className="flex items-center justify-center">
+                    <Flame size={14} className="mr-1" /> Ккал
+                  </span>
+                </Tooltip>
+              </div>
+              <div className="col-span-2"></div>
+            </div>
+
+            {exercise.sessions.map((session, sessionIndex) => (
+              <div
+                key={sessionIndex}
+                className="grid grid-cols-16 items-center py-1 border-b last:border-b-0"
+              >
+                <div className="col-span-2 text-center font-semibold">
+                  {sessionIndex + 1}
+                </div>
+                <div className="col-span-4 text-center">
+                  <InputNumber
+                    min={1}
+                    step={5}
+                    value={session.duration}
+                    onChange={(value) =>
+                      handleUpdateCardioSession(
+                        exercise.id,
+                        sessionIndex,
+                        "duration",
+                        value
+                      )
+                    }
+                    className="w-full max-w-16"
+                    size="small"
+                  />
+                </div>
+                <div className="col-span-4 text-center">
+                  <InputNumber
+                    min={0.1}
+                    step={0.5}
+                    value={session.distance}
+                    onChange={(value) =>
+                      handleUpdateCardioSession(
+                        exercise.id,
+                        sessionIndex,
+                        "distance",
+                        value
+                      )
+                    }
+                    className="w-full max-w-16"
+                    size="small"
+                  />
+                </div>
+                <div className="col-span-4 text-center">
+                  <InputNumber
+                    min={0}
+                    step={50}
+                    value={session.caloriesBurned}
+                    onChange={(value) =>
+                      handleUpdateCardioSession(
+                        exercise.id,
+                        sessionIndex,
+                        "caloriesBurned",
+                        value
+                      )
+                    }
+                    className="w-full max-w-16"
+                    size="small"
+                  />
+                </div>
+                <div className="col-span-2 text-center">
+                  <Button
+                    type="text"
+                    danger
+                    size="small"
+                    icon={<Trash size={14} />}
+                    onClick={() =>
+                      handleRemoveCardioSession(exercise.id, sessionIndex)
+                    }
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Рендеринг сессий на выносливость
+  const renderEnduranceSessions = (exercise) => {
+    return (
+      <div className="mt-2">
+        <div className="flex justify-between items-center mb-2">
+          <p className="font-medium">Сессии:</p>
+          <Button
+            type="primary"
+            size="small"
+            icon={<Plus size={14} />}
+            onClick={() => handleAddEnduranceSession(exercise.id)}
+          >
+            Добавить сессию
+          </Button>
+        </div>
+
+        {!exercise.sessions || exercise.sessions.length === 0 ? (
+          <div className="bg-gray-50 rounded-lg p-4 text-center">
+            <p className="text-gray-500 text-sm mb-2">Нет сессий</p>
+            <Button
+              type="primary"
+              size="small"
+              onClick={() => handleAddEnduranceSession(exercise.id)}
+            >
+              Добавить первую сессию
+            </Button>
+          </div>
+        ) : (
+          <div className="bg-gray-50 rounded-lg p-2">
+            <div className="grid grid-cols-12 mb-2 font-semibold text-sm">
+              <div className="col-span-2 text-center">№</div>
+              <div className="col-span-5 text-center">
+                <Tooltip title="Длительность в минутах">
+                  <span className="flex items-center justify-center">
+                    <Clock size={14} className="mr-1" /> Время
+                  </span>
+                </Tooltip>
+              </div>
+              <div className="col-span-3 text-center">
+                <Tooltip title="Сложность от 1 до 10">
+                  <span className="flex items-center justify-center">
+                    <BarChart size={14} className="mr-1" /> Сложн.
+                  </span>
+                </Tooltip>
+              </div>
+              <div className="col-span-2"></div>
+            </div>
+
+            {exercise.sessions.map((session, sessionIndex) => (
+              <div
+                key={sessionIndex}
+                className="grid grid-cols-12 items-center py-1 border-b last:border-b-0"
+              >
+                <div className="col-span-2 text-center font-semibold">
+                  {sessionIndex + 1}
+                </div>
+                <div className="col-span-5 text-center">
+                  <InputNumber
+                    min={1}
+                    step={5}
+                    value={session.duration}
+                    onChange={(value) =>
+                      handleUpdateEnduranceSession(
+                        exercise.id,
+                        sessionIndex,
+                        "duration",
+                        value
+                      )
+                    }
+                    className="w-full max-w-20"
+                    size="small"
+                  />
+                </div>
+                <div className="col-span-3 text-center">
+                  <InputNumber
+                    min={1}
+                    max={10}
+                    value={session.difficulty}
+                    onChange={(value) =>
+                      handleUpdateEnduranceSession(
+                        exercise.id,
+                        sessionIndex,
+                        "difficulty",
+                        value
+                      )
+                    }
+                    className="w-full max-w-16"
+                    size="small"
+                  />
+                </div>
+                <div className="col-span-2 text-center">
+                  <Button
+                    type="text"
+                    danger
+                    size="small"
+                    icon={<Trash size={14} />}
+                    onClick={() =>
+                      handleRemoveEnduranceSession(exercise.id, sessionIndex)
+                    }
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   const items = [
@@ -497,6 +916,12 @@ export default function WorkoutPlanEditorModal({
                         )}
                       </div>
                     )}
+
+                    {isCardioExercise(exercise) &&
+                      renderCardioSessions(exercise)}
+
+                    {isEnduranceExercise(exercise) &&
+                      renderEnduranceSessions(exercise)}
                   </Card>
                 ))}
               </div>

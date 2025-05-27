@@ -126,6 +126,7 @@ export default function WorkoutPlansPage() {
               exercise.id
             );
 
+            // Для силовых упражнений
             if (
               (exercise.type === "STRENGTH" || exercise.type === "Strength") &&
               exercise.sets &&
@@ -152,6 +153,63 @@ export default function WorkoutPlansPage() {
                 }
               });
             }
+
+            // Для кардио упражнений
+            else if (
+              (exercise.type === "CARDIO" || exercise.type === "Cardio") &&
+              exercise.sessions &&
+              exercise.sessions.length > 0
+            ) {
+              exercise.sessions.forEach((session) => {
+                try {
+                  const duration = Number(session.duration);
+                  const distance = Number(session.distance);
+                  const caloriesBurned = Number(session.caloriesBurned);
+
+                  if (!isNaN(duration) && !isNaN(distance)) {
+                    workoutPlanService.addCardioSessionToExerciseInWorkoutPlan(
+                      existingPlanId,
+                      exercise.id,
+                      duration,
+                      distance,
+                      caloriesBurned
+                    );
+                  } else {
+                    console.error("Invalid cardio session data:", session);
+                  }
+                } catch (error) {
+                  console.error("Error adding cardio session:", error);
+                }
+              });
+            }
+
+            // Для упражнений на выносливость
+            else if (
+              (exercise.type === "ENDURANCE" ||
+                exercise.type === "Endurance") &&
+              exercise.sessions &&
+              exercise.sessions.length > 0
+            ) {
+              exercise.sessions.forEach((session) => {
+                try {
+                  const duration = Number(session.duration);
+                  const difficulty = Number(session.difficulty);
+
+                  if (!isNaN(duration) && !isNaN(difficulty)) {
+                    workoutPlanService.addEnduranceSessionToExerciseInWorkoutPlan(
+                      existingPlanId,
+                      exercise.id,
+                      duration,
+                      difficulty
+                    );
+                  } else {
+                    console.error("Invalid endurance session data:", session);
+                  }
+                } catch (error) {
+                  console.error("Error adding endurance session:", error);
+                }
+              });
+            }
           });
 
           message.success(`План тренировки "${planData.name}" обновлен`);
@@ -168,6 +226,7 @@ export default function WorkoutPlansPage() {
               exercise.id
             );
 
+            // Для силовых упражнений
             if (
               (exercise.type === "STRENGTH" || exercise.type === "Strength") &&
               exercise.sets &&
@@ -190,6 +249,63 @@ export default function WorkoutPlansPage() {
                   }
                 } catch (error) {
                   console.error("Error adding set:", error);
+                }
+              });
+            }
+
+            // Для кардио упражнений
+            else if (
+              (exercise.type === "CARDIO" || exercise.type === "Cardio") &&
+              exercise.sessions &&
+              exercise.sessions.length > 0
+            ) {
+              exercise.sessions.forEach((session) => {
+                try {
+                  const duration = Number(session.duration);
+                  const distance = Number(session.distance);
+                  const caloriesBurned = Number(session.caloriesBurned);
+
+                  if (!isNaN(duration) && !isNaN(distance)) {
+                    workoutPlanService.addCardioSessionToExerciseInWorkoutPlan(
+                      createdPlan.id,
+                      exercise.id,
+                      duration,
+                      distance,
+                      caloriesBurned
+                    );
+                  } else {
+                    console.error("Invalid cardio session data:", session);
+                  }
+                } catch (error) {
+                  console.error("Error adding cardio session:", error);
+                }
+              });
+            }
+
+            // Для упражнений на выносливость
+            else if (
+              (exercise.type === "ENDURANCE" ||
+                exercise.type === "Endurance") &&
+              exercise.sessions &&
+              exercise.sessions.length > 0
+            ) {
+              exercise.sessions.forEach((session) => {
+                try {
+                  const duration = Number(session.duration);
+                  const difficulty = Number(session.difficulty);
+
+                  if (!isNaN(duration) && !isNaN(difficulty)) {
+                    workoutPlanService.addEnduranceSessionToExerciseInWorkoutPlan(
+                      createdPlan.id,
+                      exercise.id,
+                      duration,
+                      difficulty
+                    );
+                  } else {
+                    console.error("Invalid endurance session data:", session);
+                  }
+                } catch (error) {
+                  console.error("Error adding endurance session:", error);
                 }
               });
             }
