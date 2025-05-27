@@ -8,7 +8,6 @@ export default function WorkoutPlanCard({ workoutPlan, onDelete, onEdit }) {
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   const { workoutPlanService } = useWorkoutPlanner();
 
-  // Отображение списка упражнений
   const formatExerciseList = () => {
     if (!workoutPlan.exercises || workoutPlan.exercises.length === 0) {
       return "Нет упражнений";
@@ -17,7 +16,6 @@ export default function WorkoutPlanCard({ workoutPlan, onDelete, onEdit }) {
     const displayedExercises = workoutPlan.exercises.slice(0, 3).map((ex) => {
       let suffix = "";
 
-      // Добавляем информацию о подходах/сессиях
       if (ex.sets && ex.sets.length > 0) {
         suffix = ` (${ex.sets.length} ${
           ex.sets.length === 1

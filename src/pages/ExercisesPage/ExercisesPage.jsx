@@ -7,9 +7,11 @@ import ExerciseCard from "../../components/ExerciseCard/ExerciseCard";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 import { ExerciseType } from "workout-planning-lib";
 import ExerciseInfoModal from "../../components/ExerciseInfoModal/ExerciseInfoModal";
+import { useSearch } from "../../context/SearchContext";
 
 export default function ExercisesPage() {
   const { exerciseService } = useWorkoutPlanner();
+  const { searchQuery } = useSearch();
 
   const [exercises, setExercises] = useState([]);
   const [filteredExercises, setFilteredExercises] = useState([]);
@@ -97,28 +99,40 @@ export default function ExercisesPage() {
     applyFilters(selectedCategories, bodyParts);
   };
 
-  // Применение фильтров
   const applyFilters = (categories, bodyParts) => {
-    if (categories.length === 0 && bodyParts.length === 0) {
-      setFilteredExercises(exercises);
-      return;
+    let filtered = exercises;
+
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(
+        (exercise) =>
+          exercise.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (exercise.description &&
+            exercise.description
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()))
+      );
     }
 
-    const filtered = exercises.filter((exercise) => {
-      const categoryMatch =
-        categories.length === 0 ||
-        categories.some((category) => exercise.type === category.id);
+    if (categories.length > 0) {
+      filtered = filtered.filter((exercise) =>
+        categories.some((category) => exercise.type === category.id)
+      );
+    }
 
-      const bodyPartMatch =
-        bodyParts.length === 0 ||
-        (exercise.type === ExerciseType.STRENGTH &&
-          bodyParts.some((part) => exercise.bodyPart === part.id));
-
-      return categoryMatch && bodyPartMatch;
-    });
+    if (bodyParts.length > 0) {
+      filtered = filtered.filter(
+        (exercise) =>
+          exercise.type === ExerciseType.STRENGTH &&
+          bodyParts.some((part) => exercise.bodyPart === part.id)
+      );
+    }
 
     setFilteredExercises(filtered);
   };
+
+  useEffect(() => {
+    applyFilters(selectedCategories, selectedBodyParts);
+  }, [searchQuery, exercises]);
 
   const handleAddExercise = (newExercise) => {
     if (exerciseService) {

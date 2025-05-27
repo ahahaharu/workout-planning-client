@@ -9,21 +9,17 @@ export default function CategoryFilter({ categories, title, onSelect }) {
     let newSelected;
 
     if (!category) {
-      // "All" option selected - clear selection
       newSelected = [];
     } else {
-      // Check if category is already selected
       const isSelected = selectedCategories.some(
         (item) => item.id === category.id
       );
 
       if (isSelected) {
-        // Remove from selection
         newSelected = selectedCategories.filter(
           (item) => item.id !== category.id
         );
       } else {
-        // Add to selection
         newSelected = [...selectedCategories, category];
       }
     }
@@ -65,7 +61,6 @@ export default function CategoryFilter({ categories, title, onSelect }) {
       ),
     })) || [];
 
-  // Add "All" option at the beginning
   items.unshift({
     key: "all",
     label: (
@@ -81,7 +76,6 @@ export default function CategoryFilter({ categories, title, onSelect }) {
     ),
   });
 
-  // Prepare selected categories display text
   const getDisplayText = () => {
     if (selectedCategories.length === 0) {
       return "Все";

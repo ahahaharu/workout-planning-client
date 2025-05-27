@@ -6,6 +6,7 @@ import WorkoutSelectorModal from "../../components/WorkoutSelectorModal/WorkoutS
 import WorkoutSessionModal from "../../components/WorkoutSessionModal/WorkoutSessionModal";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 import { useAuth } from "../../context/AuthContext";
+import { useSearch } from "../../context/SearchContext";
 
 export default function WorkoutsPage() {
   const [selectorModalOpen, setSelectorModalOpen] = useState(false);
@@ -13,14 +14,44 @@ export default function WorkoutsPage() {
   const [currentWorkout, setCurrentWorkout] = useState(null);
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [displayedWorkouts, setDisplayedWorkouts] = useState([]);
 
   const { workoutService, workoutPlanService, exerciseService } =
     useWorkoutPlanner();
   const { currentUser } = useAuth();
+  const { searchQuery } = useSearch();
 
   useEffect(() => {
     loadWorkouts();
   }, [workoutService, currentUser]);
+
+  useEffect(() => {
+    if (!workouts || workouts.length === 0) {
+      setDisplayedWorkouts([]);
+      return;
+    }
+
+    if (!searchQuery.trim()) {
+      setDisplayedWorkouts(workouts);
+    } else {
+      const filtered = workouts.filter(
+        (workout) =>
+          (workout.name &&
+            workout.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          (workout.description &&
+            workout.description
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase())) ||
+          (workout.exercises &&
+            workout.exercises.some(
+              (exercise) =>
+                exercise.name &&
+                exercise.name.toLowerCase().includes(searchQuery.toLowerCase())
+            ))
+      );
+      setDisplayedWorkouts(filtered);
+    }
+  }, [searchQuery, workouts]);
 
   const loadWorkouts = () => {
     if (workoutService && currentUser) {
@@ -30,11 +61,8 @@ export default function WorkoutsPage() {
 
         console.log("Загружены тренировки (сырые данные):", userWorkouts);
 
-        // Обработка и обогащение данных тренировок
         const enrichedWorkouts = userWorkouts.map((workout) => {
-          // Проверяем и обогащаем каждую тренировку
           try {
-            // Получаем полные данные упражнений
             const enrichedExercises = (workout.exercises || []).map(
               (exercise) => {
                 try {
@@ -66,10 +94,8 @@ export default function WorkoutsPage() {
               }
             );
 
-            // Форматируем дату
             const formattedDate = formatDate(workout.date);
 
-            // Проверяем, что дата действительно является датой, а не строкой с названием
             const rawDate =
               workout.date instanceof Date
                 ? workout.date
@@ -77,7 +103,6 @@ export default function WorkoutsPage() {
                 ? new Date(workout.date)
                 : new Date();
 
-            // Получаем связанный план тренировки, если есть
             let workoutName = workout.name;
             let planData = null;
 
@@ -87,7 +112,6 @@ export default function WorkoutsPage() {
                   workout.plan.id
                 );
                 if (planData) {
-                  // Если у тренировки нет названия или стоит стандартное, генерируем новое
                   if (
                     !workoutName ||
                     workoutName === `Тренировка ${workout.id}`
@@ -100,9 +124,7 @@ export default function WorkoutsPage() {
               }
             }
 
-            // Если имя все еще не установлено, используем дефолтное
             if (!workoutName) {
-              // Проверяем, это пустая тренировка или по плану
               if (workout.plan && workout.plan.id) {
                 workoutName = "Тренировка по плану";
               } else {
@@ -110,7 +132,6 @@ export default function WorkoutsPage() {
               }
             }
 
-            // Получаем общий вес тренировки
             let totalWeight = 0;
             try {
               if (typeof workout.getTotalWeight === "function") {
@@ -122,7 +143,6 @@ export default function WorkoutsPage() {
                   workout.id
                 );
               } else {
-                // Ручной расчет общего веса по упражнениям
                 enrichedExercises.forEach((ex) => {
                   const sets = ex.sets || ex.completedSets || [];
                   sets.forEach((set) => {
@@ -135,7 +155,6 @@ export default function WorkoutsPage() {
               console.error("Ошибка при расчете общего веса:", error);
             }
 
-            // Возвращаем обогащенную тренировку
             return {
               id: workout.id,
               name: workoutName,
@@ -179,7 +198,6 @@ export default function WorkoutsPage() {
   const handleStartEmptyWorkout = (workoutData) => {
     setCurrentWorkout({
       ...workoutData,
-      // Устанавливаем стандартное название для пустой тренировки
       name: "Пустая тренировка",
       exercises: [],
     });
@@ -189,13 +207,11 @@ export default function WorkoutsPage() {
   const handleStartPlanWorkout = (workoutData) => {
     if (workoutData.planId && workoutPlanService) {
       try {
-        // Определяем ID плана (может быть объектом или примитивом)
         const planId =
           typeof workoutData.planId === "object"
             ? workoutData.planId.id
             : workoutData.planId;
 
-        // Получаем план тренировки
         const plan = workoutPlanService.getWorkoutPlanById(planId);
 
         if (plan) {
@@ -204,7 +220,6 @@ export default function WorkoutsPage() {
           setCurrentWorkout({
             ...workoutData,
             planId: plan.id,
-            // Устанавливаем название в формате "Тренировка по плану «Название плана»"
             name: `Тренировка по плану «${plan.name}»`,
             exercises: plan.exercises || [],
           });
@@ -212,7 +227,6 @@ export default function WorkoutsPage() {
           console.warn("План тренировки не найден:", planId);
           setCurrentWorkout({
             ...workoutData,
-            // Если план не найден, используем стандартное название
             name: "Тренировка по плану",
             exercises: [],
           });
@@ -242,12 +256,10 @@ export default function WorkoutsPage() {
       try {
         console.log("Сохраняем тренировку с данными:", workoutData);
 
-        // Определяем название тренировки, если не указано
         let workoutName = workoutData.name;
 
         if (!workoutName) {
           if (workoutData.planId) {
-            // Если это тренировка по плану, получаем название плана
             try {
               const planId =
                 typeof workoutData.planId === "object"
@@ -260,21 +272,17 @@ export default function WorkoutsPage() {
               workoutName = "Тренировка по плану";
             }
           } else {
-            // Если это пустая тренировка
             workoutName = "Пустая тренировка";
           }
         }
 
-        // Определяем ID плана
         const planId =
           typeof workoutData.planId === "object"
             ? workoutData.planId.id
             : workoutData.planId;
 
-        // Проверяем, есть ли план
         const isPlanWorkout = !!planId;
 
-        // Создаем тренировку с планом
         const workout = workoutService.createWorkout(
           currentUser.id,
           workoutData.date instanceof Date ? workoutData.date : new Date(),
@@ -283,13 +291,9 @@ export default function WorkoutsPage() {
 
         console.log("Создана новая тренировка:", workout);
 
-        // Собираем данные для отображения
         const exercisesWithData = [];
 
-        // Для тренировок по плану и без плана используем разный подход
         if (isPlanWorkout) {
-          // Для тренировок по плану упражнения уже добавлены автоматически
-          // Нам не нужно добавлять упражнения, только собираем данные для отображения
           for (const exercise of workoutData.exercises) {
             const sets = exercise.completedSets || exercise.sets || [];
 
@@ -301,15 +305,12 @@ export default function WorkoutsPage() {
             }
           }
         } else {
-          // Для пустых тренировок добавляем упражнения и подходы вручную
           for (const exercise of workoutData.exercises) {
             const sets = exercise.completedSets || exercise.sets || [];
 
             if (sets.length > 0) {
-              // Добавляем упражнение
               workoutService.addExerciseToWorkout(workout.id, exercise.id);
 
-              // Записываем подходы
               if (
                 exercise.type === "STRENGTH" ||
                 exercise.type === "Strength"
@@ -339,7 +340,6 @@ export default function WorkoutsPage() {
           }
         }
 
-        // Создаем объект для отображения
         const displayWorkout = {
           id: workout.id,
           name: workoutName,
@@ -349,18 +349,15 @@ export default function WorkoutsPage() {
           totalWeight: workoutData.totalWeight || 0,
           planId: planId || null,
           description: workoutData.description || "",
-          // Явно указываем план для корректного отображения
           plan: planId ? { id: planId } : null,
         };
 
         console.log("Готовая тренировка для отображения:", displayWorkout);
 
-        // Добавляем новую тренировку в состояние React
         setWorkouts((prevWorkouts) => [displayWorkout, ...prevWorkouts]);
 
         message.success("Тренировка успешно сохранена");
 
-        // Для синхронизации состояния с бэкендом
         setTimeout(loadWorkouts, 500);
       } catch (error) {
         console.error("Ошибка при сохранении тренировки:", error);
@@ -372,18 +369,15 @@ export default function WorkoutsPage() {
   const handleDeleteWorkout = (workoutId) => {
     if (workoutService && workoutId !== undefined) {
       try {
-        // Проверяем существует ли метод deleteWorkout в workoutService
         if (typeof workoutService.deleteWorkout === "function") {
           workoutService.deleteWorkout(workoutId);
         } else {
-          // Альтернативный способ: удаляем тренировку из списка в workoutService
           const workoutIndex = workoutService.workouts.findIndex(
             (w) => w.id === workoutId
           );
           if (workoutIndex !== -1) {
             workoutService.workouts.splice(workoutIndex, 1);
 
-            // Сохраняем изменения, если есть метод _saveWorkouts
             if (typeof workoutService._saveWorkouts === "function") {
               workoutService._saveWorkouts();
             }
@@ -392,7 +386,6 @@ export default function WorkoutsPage() {
           }
         }
 
-        // Обновляем список тренировок в интерфейсе
         setWorkouts((prevWorkouts) =>
           prevWorkouts.filter((w) => w.id !== workoutId)
         );
@@ -410,14 +403,12 @@ export default function WorkoutsPage() {
       try {
         console.log("Обновляем тренировку:", workoutId, editedWorkoutData);
 
-        // Находим существующую тренировку в сервисе
         const existingWorkout = workoutService.getWorkoutById(workoutId);
 
         if (!existingWorkout) {
           throw new Error("Тренировка не найдена");
         }
 
-        // Обновляем основные данные тренировки
         if (existingWorkout.name && editedWorkoutData.name) {
           existingWorkout.name = editedWorkoutData.name;
         }
@@ -426,26 +417,20 @@ export default function WorkoutsPage() {
           existingWorkout.date = editedWorkoutData.date;
         }
 
-        // Очищаем все существующие упражнения, если метод доступен
         if (typeof workoutService.clearWorkoutExercises === "function") {
           workoutService.clearWorkoutExercises(workoutId);
         } else {
-          // Альтернативный подход - удаляем каждое упражнение по отдельности
           const exercisesToRemove = [...existingWorkout.exercises];
           exercisesToRemove.forEach((exercise) => {
             workoutService.removeExerciseFromWorkout(workoutId, exercise.id);
           });
 
-          // Очищаем массив упражнений
           existingWorkout.exercises = [];
         }
 
-        // Добавляем упражнения и подходы из отредактированной тренировки
         for (const exercise of editedWorkoutData.exercises) {
-          // Добавляем упражнение
           workoutService.addExerciseToWorkout(workoutId, exercise.id);
 
-          // Добавляем подходы
           const sets = exercise.completedSets || exercise.sets || [];
 
           if (
@@ -470,12 +455,10 @@ export default function WorkoutsPage() {
           }
         }
 
-        // Сохраняем изменения, если доступен метод
         if (typeof workoutService._saveWorkouts === "function") {
           workoutService._saveWorkouts();
         }
 
-        // Обновляем состояние UI
         setWorkouts((prevWorkouts) =>
           prevWorkouts.map((workout) =>
             workout.id === workoutId
@@ -494,7 +477,6 @@ export default function WorkoutsPage() {
 
         message.success("Тренировка успешно обновлена");
 
-        // Перезагружаем тренировки для синхронизации с бэкендом
         setTimeout(loadWorkouts, 500);
       } catch (error) {
         console.error("Ошибка при обновлении тренировки:", error);
@@ -510,8 +492,7 @@ export default function WorkoutsPage() {
     return new Date(date).toLocaleDateString("ru-RU", options);
   };
 
-  // Сортировка тренировок по дате (новые сверху)
-  const sortedWorkouts = [...workouts].sort((a, b) => {
+  const sortedWorkouts = [...displayedWorkouts].sort((a, b) => {
     const dateA = a.rawDate ? new Date(a.rawDate) : new Date(0);
     const dateB = b.rawDate ? new Date(b.rawDate) : new Date(0);
     return dateB - dateA;

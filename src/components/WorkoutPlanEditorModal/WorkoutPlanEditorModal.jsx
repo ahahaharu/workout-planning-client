@@ -46,25 +46,21 @@ export default function WorkoutPlanEditorModal({
   );
   const [exercises, setExercises] = useState([]);
 
-  // Состояния для поиска и выбора упражнений
   const [allExercises, setAllExercises] = useState([]);
   const [filteredExercises, setFilteredExercises] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("details");
 
-  // Загружаем упражнения при открытии модального окна
   useEffect(() => {
     if (isOpen && exerciseService) {
       setLoading(true);
       try {
         const fetchedExercises = exerciseService.getAllExercises();
 
-        // Инициализируем упражнения плана
         let planExercises = [];
         if (workoutPlan && workoutPlan.exercises) {
           planExercises = [...workoutPlan.exercises].map((ex) => {
-            // Убеждаемся, что у каждого упражнения есть массив подходов
             return {
               ...ex,
               sets: ex.sets || [],
@@ -73,7 +69,6 @@ export default function WorkoutPlanEditorModal({
         }
         setExercises(planExercises);
 
-        // Исключаем из списка уже добавленные упражнения
         const exerciseIdsInPlan = planExercises.map((ex) => ex.id);
         const availableExercises = fetchedExercises.filter(
           (ex) => !exerciseIdsInPlan.includes(ex.id)
@@ -89,7 +84,6 @@ export default function WorkoutPlanEditorModal({
     }
   }, [isOpen, exerciseService, workoutPlan]);
 
-  // Заполняем форму при открытии на редактирование
   useEffect(() => {
     if (isOpen && workoutPlan) {
       setPlanName(workoutPlan.name || "");
@@ -100,7 +94,6 @@ export default function WorkoutPlanEditorModal({
         description: workoutPlan.description || "",
       });
     } else if (isOpen && !workoutPlan) {
-      // Для нового плана
       setPlanName("");
       setPlanDescription("");
       setExercises([]);
@@ -112,7 +105,6 @@ export default function WorkoutPlanEditorModal({
     }
   }, [isOpen, workoutPlan, form]);
 
-  // Обработчик поиска упражнений
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchText(value);
@@ -129,9 +121,7 @@ export default function WorkoutPlanEditorModal({
     setFilteredExercises(filtered);
   };
 
-  // Добавление упражнения в план
   const handleAddExercise = (exercise) => {
-    // Добавляем упражнение с начальным подходом для силовых упражнений
     const initialSets =
       exercise.type === "STRENGTH" || exercise.type === "Strength"
         ? [{ reps: 10, weight: 20 }]
@@ -146,7 +136,6 @@ export default function WorkoutPlanEditorModal({
     ];
     setExercises(newExercises);
 
-    // Обновляем список доступных упражнений
     const updatedAvailable = allExercises.filter((ex) => ex.id !== exercise.id);
     setAllExercises(updatedAvailable);
     setFilteredExercises(
@@ -155,7 +144,6 @@ export default function WorkoutPlanEditorModal({
       )
     );
 
-    // Переключаемся на упражнение для редактирования подходов
     if (exercise.type === "STRENGTH" || exercise.type === "Strength") {
       message.success(
         "Упражнение добавлено. Теперь вы можете настроить подходы.",
@@ -164,14 +152,12 @@ export default function WorkoutPlanEditorModal({
     }
   };
 
-  // Удаление упражнения из плана
   const handleRemoveExercise = (exerciseId) => {
     const removedExercise = exercises.find((ex) => ex.id === exerciseId);
     const newExercises = exercises.filter((ex) => ex.id !== exerciseId);
 
     setExercises(newExercises);
 
-    // Возвращаем упражнение в список доступных
     if (removedExercise) {
       const updatedAvailable = [...allExercises, removedExercise];
       setAllExercises(updatedAvailable);
@@ -183,7 +169,6 @@ export default function WorkoutPlanEditorModal({
     }
   };
 
-  // Перемещение упражнения в плане (вверх/вниз)
   const handleMoveExercise = (index, direction) => {
     const newIndex = direction === "up" ? index - 1 : index + 1;
 
@@ -196,11 +181,9 @@ export default function WorkoutPlanEditorModal({
     }
   };
 
-  // Добавление подхода к упражнению
   const handleAddSet = (exerciseId) => {
     const newExercises = exercises.map((ex) => {
       if (ex.id === exerciseId) {
-        // Определяем начальные значения для нового подхода
         const lastSet =
           ex.sets && ex.sets.length > 0
             ? ex.sets[ex.sets.length - 1]
@@ -217,7 +200,6 @@ export default function WorkoutPlanEditorModal({
     setExercises(newExercises);
   };
 
-  // Удаление подхода упражнения
   const handleRemoveSet = (exerciseId, setIndex) => {
     const newExercises = exercises.map((ex) => {
       if (ex.id === exerciseId) {
@@ -231,7 +213,6 @@ export default function WorkoutPlanEditorModal({
     setExercises(newExercises);
   };
 
-  // Обновление данных подхода
   const handleUpdateSet = (exerciseId, setIndex, field, value) => {
     const newExercises = exercises.map((ex) => {
       if (ex.id === exerciseId) {
@@ -250,7 +231,6 @@ export default function WorkoutPlanEditorModal({
     setExercises(newExercises);
   };
 
-  // Сохранение плана тренировок
   const handleSave = () => {
     form
       .validateFields()
@@ -272,7 +252,6 @@ export default function WorkoutPlanEditorModal({
       });
   };
 
-  // Функция для отображения типа упражнения на русском языке
   const getExerciseTypeName = (type) => {
     const typeMap = {
       STRENGTH: "Силовое",
@@ -285,7 +264,6 @@ export default function WorkoutPlanEditorModal({
     return typeMap[type] || type;
   };
 
-  // Функция для отображения части тела на русском языке
   const getBodyPartName = (bodyPart) => {
     if (!bodyPart) return "";
 
@@ -314,12 +292,10 @@ export default function WorkoutPlanEditorModal({
     return bodyPartMap[bodyPart] || bodyPart;
   };
 
-  // Проверка, является ли упражнение силовым
   const isStrengthExercise = (exercise) => {
     return exercise.type === "STRENGTH" || exercise.type === "Strength";
   };
 
-  // Вкладки для организации интерфейса
   const items = [
     {
       key: "details",

@@ -195,7 +195,6 @@ export default function WorkoutInfoModal({
       date: enhancedWorkout.rawDate || new Date(),
       exercises: enhancedWorkout.exercises.map((exercise) => ({
         ...exercise,
-        // Убедимся, что у каждого упражнения есть все необходимые данные
         sets: exercise.sets || [],
         completedSets: exercise.completedSets || exercise.sets || [],
         originalSets: exercise.sets || [],
@@ -325,7 +324,6 @@ export default function WorkoutInfoModal({
                       </div>
                     </div>
 
-                    {/* Отображаем информацию о подходах */}
                     {(exercise.type === "STRENGTH" ||
                       exercise.type === "Strength") &&
                       renderExerciseSets(exercise)}
@@ -350,7 +348,7 @@ export default function WorkoutInfoModal({
               type="primary"
               size="large"
               icon={<Edit size={20} />}
-              onClick={handleEditWorkout} // Добавляем обработчик
+              onClick={handleEditWorkout}
             >
               Редактировать тренировку
             </Button>
@@ -392,14 +390,12 @@ export default function WorkoutInfoModal({
         )}
       </Modal>
 
-      {/* Модальное окно с деталями упражнения */}
       <ExerciseInfoModal
         isOpen={exerciseDetailModalOpen}
         onClose={() => setExerciseDetailModalOpen(false)}
         exercise={selectedExercise}
       />
 
-      {/* Модальное окно редактирования тренировки */}
       {enhancedWorkout && (
         <WorkoutSessionModal
           isOpen={editModalOpen}

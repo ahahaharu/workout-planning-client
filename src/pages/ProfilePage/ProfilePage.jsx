@@ -42,16 +42,16 @@ export default function ProfilePage() {
           values.email,
           values.height
         );
-        
+
         const updatedUser = {
           ...currentUser,
           name: values.name,
           email: values.email,
-          height: values.height
+          height: values.height,
         };
-        
+
         updateCurrentUser(updatedUser);
-        
+
         message.success("Профиль успешно обновлен");
       } else {
         message.warning("Сервис пользователей недоступен");
@@ -71,15 +71,14 @@ export default function ProfilePage() {
     try {
       if (userService) {
         userService.updateUserWeight(Number(values.weight));
-        
+
         const updatedUser = {
           ...currentUser,
-          currentWeight: Number(values.weight)
+          currentWeight: Number(values.weight),
         };
-        
-        // Вызываем метод из контекста вместо локального обновления
+
         updateCurrentUser(updatedUser);
-        
+
         message.success("Вес успешно обновлен");
       } else {
         message.warning("Сервис пользователей недоступен");
@@ -90,7 +89,9 @@ export default function ProfilePage() {
     }
   };
 
-  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=0D8ABC&color=fff&size=128`;
+  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    currentUser.name
+  )}&background=0D8ABC&color=fff&size=128`;
 
   return (
     <PageLayout title="Профиль">
@@ -106,48 +107,37 @@ export default function ProfilePage() {
                 />
               </div>
               <div className="flex flex-col">
-                <p className={`text-md ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                <p
+                  className={`text-md ${
+                    isDarkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
                   Id: {currentUser.id}
                 </p>
                 <h1 className="text-4xl font-bold mb-2">{currentUser.name}</h1>
-                <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                <p className={isDarkMode ? "text-gray-300" : "text-gray-600"}>
                   {currentUser.email}
                 </p>
                 <div className="mt-3">
-                  <p className="text-lg">
-                    Рост: {currentUser.height} см
-                  </p>
+                  <p className="text-lg">Рост: {currentUser.height} см</p>
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-6 flex items-center">
               <h2 className="text-xl mr-4">
                 Текущий вес: {currentUser.currentWeight} кг
               </h2>
-              <Button 
-                type="default" 
-                onClick={showWeightModal} 
-                size="small"
-              >
+              <Button type="default" onClick={showWeightModal} size="small">
                 Обновить вес
               </Button>
             </div>
-            
+
             <div className="mt-6 flex space-x-4">
-              <Button 
-                type="primary" 
-                size="large" 
-                onClick={handleEditProfile}
-              >
+              <Button type="primary" size="large" onClick={handleEditProfile}>
                 Редактировать профиль
               </Button>
-              <Button 
-                type="default" 
-                size="large" 
-                danger 
-                onClick={logout}
-              >
+              <Button type="default" size="large" danger onClick={logout}>
                 Выйти
               </Button>
             </div>
@@ -162,53 +152,56 @@ export default function ProfilePage() {
               initialValues={{
                 name: currentUser.name,
                 email: currentUser.email,
-                height: currentUser.height
+                height: currentUser.height,
               }}
             >
               <Form.Item
                 name="name"
                 label="Имя"
-                rules={[{ required: true, message: 'Пожалуйста, введите имя' }]}
+                rules={[{ required: true, message: "Пожалуйста, введите имя" }]}
               >
                 <Input size="large" />
               </Form.Item>
-              
+
               <Form.Item
                 name="email"
                 label="Email"
                 rules={[
-                  { required: true, message: 'Пожалуйста, введите email' },
-                  { type: 'email', message: 'Пожалуйста, введите корректный email' }
+                  { required: true, message: "Пожалуйста, введите email" },
+                  {
+                    type: "email",
+                    message: "Пожалуйста, введите корректный email",
+                  },
                 ]}
               >
                 <Input size="large" />
               </Form.Item>
-              
+
               <Form.Item
                 name="height"
                 label="Рост (см)"
                 rules={[
-                  { required: true, message: 'Пожалуйста, введите рост' },
-                  { 
-                    type: 'number', 
-                    min: 100, 
-                    max: 250, 
+                  { required: true, message: "Пожалуйста, введите рост" },
+                  {
+                    type: "number",
+                    min: 100,
+                    max: 250,
                     transform: (value) => Number(value),
-                    message: 'Рост должен быть между 100 и 250 см' 
-                  }
+                    message: "Рост должен быть между 100 и 250 см",
+                  },
                 ]}
               >
                 <Input type="number" size="large" />
               </Form.Item>
-              
+
               <Form.Item>
                 <div className="flex space-x-4">
                   <Button type="primary" htmlType="submit" size="large">
                     Сохранить
                   </Button>
-                  <Button 
-                    type="default" 
-                    size="large" 
+                  <Button
+                    type="default"
+                    size="large"
                     onClick={() => setIsEditMode(false)}
                   >
                     Отмена
@@ -219,9 +212,9 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
-      
+
       <Divider />
-      
+
       {}
       <Modal
         title="Обновить текущий вес"
@@ -229,28 +222,27 @@ export default function ProfilePage() {
         onCancel={() => setIsWeightModalVisible(false)}
         footer={null}
       >
-        <Form
-          form={weightForm}
-          layout="vertical"
-          onFinish={handleUpdateWeight}
-        >
+        <Form form={weightForm} layout="vertical" onFinish={handleUpdateWeight}>
           <Form.Item
             name="weight"
             label="Новый вес (кг)"
             rules={[
-              { required: true, message: 'Пожалуйста, введите ваш текущий вес' },
-              { 
-                type: 'number', 
-                min: 30, 
-                max: 300, 
+              {
+                required: true,
+                message: "Пожалуйста, введите ваш текущий вес",
+              },
+              {
+                type: "number",
+                min: 30,
+                max: 300,
                 transform: (value) => Number(value),
-                message: 'Вес должен быть между 30 и 300 кг' 
-              }
+                message: "Вес должен быть между 30 и 300 кг",
+              },
             ]}
           >
             <Input type="number" />
           </Form.Item>
-          
+
           <Form.Item>
             <div className="flex justify-end space-x-2">
               <Button onClick={() => setIsWeightModalVisible(false)}>

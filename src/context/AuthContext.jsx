@@ -17,7 +17,6 @@ export const AuthProvider = ({ children }) => {
     loading: plannerLoading,
   } = useWorkoutPlanner();
 
-  // Восстановление сессии пользователя при загрузке
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -27,7 +26,6 @@ export const AuthProvider = ({ children }) => {
             const userData = JSON.parse(storedUser);
 
             try {
-              // После получения пользователя выполняем синхронизацию
               if (
                 workoutPlanner &&
                 workoutPlanner.storageManager &&
@@ -41,13 +39,10 @@ export const AuthProvider = ({ children }) => {
                 );
               }
 
-              // Получаем полную информацию о пользователе из сервиса
               const user = userService.getUserById(userData.id);
 
-              // Устанавливаем текущего пользователя в сервисе (это ключевое изменение)
               userService.currentUser = user;
 
-              // Проверка workoutService для отладки
               if (workoutService) {
                 const userWorkouts = workoutService.getWorkoutsForUser(user.id);
                 console.log(
@@ -55,10 +50,8 @@ export const AuthProvider = ({ children }) => {
                 );
               }
 
-              // Обновляем локальное состояние пользователя с полными данными
               const fullUserData = {
                 ...userData,
-                // Включаем полную историю веса
                 weightHistory: user.weightHistory || [],
               };
 
@@ -80,22 +73,19 @@ export const AuthProvider = ({ children }) => {
     };
 
     initializeAuth();
-  }, [userService, workoutService, workoutPlanner]); // Добавляем workoutPlanner в зависимости
+  }, [userService, workoutService, workoutPlanner]);
 
   const login = async (email, password) => {
     if (userService) {
       try {
-        // Вызов метода loginUser из сервиса
         const user = userService.loginUser(email, password);
 
-        // Создаем объект с ПОЛНЫМИ данными для хранения в localStorage
         const userData = {
           id: user.id,
           email: user.email,
           name: user.name,
           currentWeight: user.currentWeight,
           height: user.height,
-          // Включаем полную историю веса
           weightHistory: user.weightHistory || [],
         };
 
@@ -107,7 +97,6 @@ export const AuthProvider = ({ children }) => {
         throw error;
       }
     } else {
-      // Временная логика для разработки (когда сервис недоступен)
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       if (email && password) {
@@ -150,14 +139,12 @@ export const AuthProvider = ({ children }) => {
           numericHeight
         );
 
-        // Создаем полный объект пользователя с историей веса
         const userData = {
           id: user.id,
           email: user.email,
           name: user.name,
           currentWeight: numericWeight,
           height: numericHeight,
-          // Добавляем историю веса
           weightHistory: user.weightHistory || [],
         };
 
@@ -211,11 +198,9 @@ export const AuthProvider = ({ children }) => {
   const updateCurrentUser = (userData) => {
     if (userService) {
       try {
-        // Получаем актуальные данные пользователя из сервиса
         const user = userService.getUserById(userData.id);
         userService.currentUser = user;
 
-        // Обеспечиваем наличие полной истории веса
         if (
           !userData.weightHistory ||
           (user.weightHistory &&
@@ -228,10 +213,8 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    // Обновляем в контексте
     setCurrentUser(userData);
 
-    // Обновляем в localStorage
     localStorage.setItem("user", JSON.stringify(userData));
   };
 

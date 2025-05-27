@@ -80,7 +80,6 @@ export default function WorkoutSelectorModal({
     });
   };
 
-  // Выбор плана для тренировки
   const handleSelectPlan = (plan) => {
     workoutForm.validateFields().then((values) => {
       if (!plan || typeof plan.id === "undefined") {

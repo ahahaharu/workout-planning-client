@@ -98,14 +98,6 @@ export default function ExerciseCard({ exercise, onDelete, onEdit }) {
         >
           Информация
         </Button>
-
-        {/* <Button
-          size="large"
-          type="primary"
-          onClick={() => handleEdit()}
-        >
-          Редактировать
-        </Button> */}
       </div>
 
       <ExerciseInfoModal

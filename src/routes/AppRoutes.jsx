@@ -16,7 +16,6 @@ export default function AppRoutes() {
 
   return (
     <Routes>
-      {/* Redirect root to either workouts (if authenticated) or auth */}
       <Route
         path="/"
         element={

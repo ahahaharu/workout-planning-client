@@ -6,6 +6,7 @@ import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 import { useAuth } from "../../context/AuthContext";
 import WorkoutPlanEditorModal from "../../components/WorkoutPlanEditorModal/WorkoutPlanEditorModal";
 import { useNavigate } from "react-router-dom";
+import { useSearch } from "../../context/SearchContext";
 
 export default function WorkoutPlansPage() {
   const [editorModalOpen, setEditorModalOpen] = useState(false);
@@ -15,10 +16,46 @@ export default function WorkoutPlansPage() {
   const { workoutPlanService, exerciseService } = useWorkoutPlanner();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+  const { searchQuery } = useSearch();
+  const [displayedWorkoutPlans, setDisplayedWorkoutPlans] = useState([]);
 
   useEffect(() => {
     loadWorkoutPlans();
   }, [workoutPlanService, currentUser]);
+
+  useEffect(() => {
+    console.log("Поисковый запрос изменился:", searchQuery);
+    console.log("Текущие планы тренировок:", workoutPlans);
+
+    if (!workoutPlans || workoutPlans.length === 0) {
+      setDisplayedWorkoutPlans([]);
+      return;
+    }
+
+    if (!searchQuery || searchQuery.trim() === "") {
+      setDisplayedWorkoutPlans(workoutPlans);
+      console.log("Отображение всех планов, поиск пустой");
+    } else {
+      const query = searchQuery.toLowerCase().trim();
+      const filtered = workoutPlans.filter((plan) => {
+        const nameMatch = plan.name && plan.name.toLowerCase().includes(query);
+        const descMatch =
+          plan.description && plan.description.toLowerCase().includes(query);
+
+        const exercisesMatch =
+          plan.exercises &&
+          plan.exercises.some(
+            (exercise) =>
+              exercise.name && exercise.name.toLowerCase().includes(query)
+          );
+
+        return nameMatch || descMatch || exercisesMatch;
+      });
+
+      console.log(`Найдено ${filtered.length} планов по запросу "${query}"`);
+      setDisplayedWorkoutPlans(filtered);
+    }
+  }, [searchQuery, workoutPlans]);
 
   const loadWorkoutPlans = () => {
     if (workoutPlanService && currentUser) {
@@ -26,6 +63,8 @@ export default function WorkoutPlansPage() {
         setLoading(true);
         const plans = workoutPlanService.getWorkoutPlansForUser(currentUser.id);
         setWorkoutPlans(plans);
+        setDisplayedWorkoutPlans(plans);
+        console.log("Загружено планов:", plans.length);
       } catch (error) {
         console.error("Ошибка при загрузке планов тренировок:", error);
         message.error("Не удалось загрузить планы тренировок");
@@ -181,7 +220,7 @@ export default function WorkoutPlansPage() {
   };
 
   const handleStartEmptyWorkout = () => {
-    navigate("/workouts"); // Переход на страницу тренировок
+    navigate("/workouts");
   };
 
   return (
@@ -208,9 +247,9 @@ export default function WorkoutPlansPage() {
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
         </div>
-      ) : workoutPlans.length > 0 ? (
+      ) : displayedWorkoutPlans.length > 0 ? (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          {workoutPlans.map((plan) => (
+          {displayedWorkoutPlans.map((plan) => (
             <WorkoutPlanCard
               key={plan.id}
               workoutPlan={{
@@ -224,6 +263,11 @@ export default function WorkoutPlansPage() {
             />
           ))}
         </div>
+      ) : searchQuery && searchQuery.trim() !== "" ? (
+        <Empty
+          description={`Нет планов тренировок, соответствующих запросу "${searchQuery}"`}
+          className="my-10"
+        />
       ) : (
         <Empty
           description="У вас еще нет планов тренировок"

@@ -4,7 +4,6 @@ import { message, Divider } from "antd";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 import { useAuth } from "../../context/AuthContext";
 
-// Импортируем компоненты
 import WeightStatistics from "../../components/WeightStatistics/WeightStatistics";
 import WorkoutStatistics from "../../components/WorkoutStatistics/WorkoutStatistics";
 import WeightUpdateModal from "../../components/WeightUpdateModal/WeightUpdateModal";
@@ -17,14 +16,12 @@ export default function StatisticsPage() {
   const [workoutLoading, setWorkoutLoading] = useState(true);
   const [isWeightModalVisible, setIsWeightModalVisible] = useState(false);
 
-  // Состояния для статистики упражнений
   const [exercises, setExercises] = useState([]);
   const [exercisesLoading, setExercisesLoading] = useState(true);
   const [selectedExerciseId, setSelectedExerciseId] = useState(null);
   const [exerciseStats, setExerciseStats] = useState(null);
   const [exerciseStatsLoading, setExerciseStatsLoading] = useState(false);
 
-  // Разделяем диапазоны дат для каждого раздела
   const [weightDateRange, setWeightDateRange] = useState([null, null]);
   const [workoutDateRange, setWorkoutDateRange] = useState([null, null]);
   const [exerciseDateRange, setExerciseDateRange] = useState([null, null]);
@@ -49,7 +46,6 @@ export default function StatisticsPage() {
     loadUserExercises();
   }, [currentUser, statisticsService, workoutService, exerciseService]);
 
-  // Загрузка списка упражнений, которые пользователь использовал в тренировках
   const loadUserExercises = () => {
     if (!currentUser || !workoutService || !exerciseService) {
       setExercisesLoading(false);
@@ -58,10 +54,8 @@ export default function StatisticsPage() {
 
     setExercisesLoading(true);
     try {
-      // Получаем все тренировки пользователя
       const userWorkouts = workoutService.getWorkoutsForUser(currentUser.id);
 
-      // Собираем уникальные ID упражнений из всех тренировок
       const exerciseIds = new Set();
       userWorkouts.forEach((workout) => {
         if (workout.exercises && workout.exercises.length > 0) {
@@ -71,7 +65,6 @@ export default function StatisticsPage() {
         }
       });
 
-      // Получаем полные данные упражнений из сервиса упражнений
       const userExercises = [];
       exerciseIds.forEach((id) => {
         try {
@@ -84,7 +77,6 @@ export default function StatisticsPage() {
         }
       });
 
-      // Сортируем упражнения по имени
       userExercises.sort((a, b) => a.name.localeCompare(b.name));
 
       setExercises(userExercises);
@@ -97,7 +89,6 @@ export default function StatisticsPage() {
     }
   };
 
-  // Обработчик выбора упражнения для просмотра статистики
   const handleExerciseSelect = (exerciseId) => {
     if (!exerciseId || !statisticsService || !currentUser) {
       setExerciseStats(null);
@@ -105,7 +96,6 @@ export default function StatisticsPage() {
       return;
     }
 
-    // Получаем даты из диапазона, если они установлены
     const startDate = exerciseDateRange[0]
       ? exerciseDateRange[0].toDate()
       : null;
@@ -168,7 +158,6 @@ export default function StatisticsPage() {
     }
   };
 
-  // Вспомогательные функции
   const formatDate = (date) => {
     if (!date) return "";
     const options = { year: "numeric", month: "long", day: "numeric" };
@@ -186,7 +175,6 @@ export default function StatisticsPage() {
     }
   };
 
-  // Функции загрузки данных
   const loadWorkoutData = (startDate = null, endDate = null) => {
     if (!currentUser || !statisticsService) {
       setWorkoutLoading(false);
@@ -311,7 +299,6 @@ export default function StatisticsPage() {
     }
   };
 
-  // Обработчики событий для веса
   const handleWeightDateRangeChange = (dates) => {
     if (!dates || dates.length !== 2) {
       setWeightDateRange([null, null]);
@@ -379,7 +366,6 @@ export default function StatisticsPage() {
     }
   };
 
-  // Обработчики событий для тренировок
   const handleWorkoutDateRangeChange = (dates) => {
     if (!dates || dates.length !== 2) {
       setWorkoutDateRange([null, null]);

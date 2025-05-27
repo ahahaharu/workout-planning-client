@@ -19,7 +19,6 @@ export const WorkoutPlannerProvider = ({ children }) => {
     storageManager: null,
   });
 
-  // Функция для принудительной синхронизации, доступная через контекст
   const forceSyncLibrary = () => {
     if (!workoutPlanner || !workoutPlanner.storageManager) {
       console.error("Планировщик не инициализирован");
@@ -27,7 +26,6 @@ export const WorkoutPlannerProvider = ({ children }) => {
     }
 
     try {
-      // Вызываем новый метод syncLocalStorageWithLibrary
       const result =
         workoutPlanner.storageManager.syncLocalStorageWithLibrary(
           workoutPlanner
@@ -40,14 +38,12 @@ export const WorkoutPlannerProvider = ({ children }) => {
     }
   };
 
-  // Инициализация планировщика при загрузке
   useEffect(() => {
     const initializeWorkoutPlanner = () => {
       try {
         const planner = createWorkoutPlanner();
         setWorkoutPlanner(planner);
 
-        // Установка сервисов в состояние
         setServices({
           userService: planner.userService,
           exerciseService: planner.exerciseService,
@@ -57,7 +53,6 @@ export const WorkoutPlannerProvider = ({ children }) => {
           storageManager: planner.storageManager,
         });
 
-        // Принудительная синхронизация данных при инициализации
         if (planner.storageManager.syncLocalStorageWithLibrary) {
           console.log("Выполняем начальную синхронизацию с localStorage...");
           const syncResult =
@@ -69,12 +64,10 @@ export const WorkoutPlannerProvider = ({ children }) => {
           );
         }
 
-        // Синхронизация текущего пользователя с библиотекой
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
           try {
             const userData = JSON.parse(storedUser);
-            // Установка текущего пользователя в UserService
             const user = planner.userService.getUserById(userData.id);
             if (user) {
               planner.userService.currentUser = user;
@@ -83,7 +76,6 @@ export const WorkoutPlannerProvider = ({ children }) => {
                 user
               );
 
-              // Проверка тренировок пользователя
               const userWorkouts = planner.workoutService.getWorkoutsForUser(
                 user.id
               );
@@ -91,13 +83,11 @@ export const WorkoutPlannerProvider = ({ children }) => {
                 `Найдено ${userWorkouts.length} тренировок пользователя в сервисе`
               );
 
-              // Проверка и принудительная синхронизация всех упражнений из локального хранилища
               const storedExercises = planner.storageManager.getExercises();
               console.log(
                 `Найдено ${storedExercises.length} упражнений в localStorage`
               );
 
-              // Проверим, что все упражнения из тренировок присутствуют в сервисе упражнений
               const exerciseIdSet = new Set(
                 planner.exerciseService.getAllExercises().map((ex) => ex.id)
               );
@@ -105,7 +95,6 @@ export const WorkoutPlannerProvider = ({ children }) => {
                 `В сервисе упражнений доступно ${exerciseIdSet.size} упражнений`
               );
 
-              // Собираем все уникальные ID упражнений из тренировок
               const exercisesInWorkouts = new Set();
               userWorkouts.forEach((workout) => {
                 (workout.exercises || []).forEach((ex) => {
@@ -116,7 +105,6 @@ export const WorkoutPlannerProvider = ({ children }) => {
                 `В тренировках используется ${exercisesInWorkouts.size} уникальных упражнений`
               );
 
-              // Выводим упражнения, которые есть в тренировках, но отсутствуют в сервисе
               exercisesInWorkouts.forEach((id) => {
                 if (!exerciseIdSet.has(id)) {
                   console.warn(
@@ -142,7 +130,6 @@ export const WorkoutPlannerProvider = ({ children }) => {
     initializeWorkoutPlanner();
   }, []);
 
-  // Пересинхронизация при изменении пользователя
   useEffect(() => {
     if (workoutPlanner && services.userService) {
       const syncUserWithServices = () => {
@@ -163,7 +150,6 @@ export const WorkoutPlannerProvider = ({ children }) => {
         }
       };
 
-      // Слушаем изменения в localStorage для user
       const handleStorageChange = (e) => {
         if (e.key === "user") {
           syncUserWithServices();
@@ -181,7 +167,7 @@ export const WorkoutPlannerProvider = ({ children }) => {
     workoutPlanner,
     ...services,
     loading,
-    forceSyncLibrary, // Добавляем метод в контекст
+    forceSyncLibrary,
   };
 
   return (

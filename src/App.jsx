@@ -19,6 +19,7 @@ import { useTheme } from "./context/ThemeContext";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import StatisticsPage from "./pages/StatisticsPage/StatisticsPage";
 import { createWorkoutPlanner } from "workout-planning-lib";
+import { SearchProvider } from "./context/SearchContext";
 
 function App() {
   const { currentUser } = useAuth();
@@ -26,7 +27,6 @@ function App() {
   const { isDarkMode } = useTheme();
   const location = useLocation();
   const [is404, setIs404] = useState(false);
-
 
   useEffect(() => {
     document.body.style.backgroundColor = isDarkMode ? "#121214" : "#f9fafb";
@@ -48,7 +48,6 @@ function App() {
   const isProfile = location.pathname === "/profile";
   const isStatistics = location.pathname === "/statistics";
 
-  // Theme configuration
   const theme = {
     token: {
       colorPrimary: "#6366f1", // indigo-500
@@ -105,49 +104,53 @@ function App() {
       {!currentUser || isAuthPage || is404 ? (
         <AppRoutes />
       ) : (
-        <Wrapper>
-          <Sidebar>
-            <SidebarItem
-              icon={<Dumbbell color={isDarkMode ? "white" : "#4a5565"} />}
-              text={"Тренировка"}
-              to="/workouts"
-            />
-            <SidebarItem
-              icon={<BicepsFlexed color={isDarkMode ? "white" : "#4a5565"} />}
-              text={"Упражнения"}
-              to="/exercises"
-            />
-            <SidebarItem
-              icon={<NotebookTabs color={isDarkMode ? "white" : "#4a5565"} />}
-              text={"Программы"}
-              to="/workoutPlans"
-            />
-            <SidebarItem
-              icon={
-                <ChartNoAxesCombined color={isDarkMode ? "white" : "#4a5565"} />
-              }
-              text={"Cтатистика"}
-              to="/statistics"
-            />
-            <SidebarItem
-              icon={<Settings color={isDarkMode ? "white" : "#4a5565"} />}
-              text={"Настройки"}
-              to="/settings"
-            />
-          </Sidebar>
-          {isSettings ? (
-            <SettingsPage />
-          ) : isProfile ? (
-            <ProfilePage />
-          ) : isStatistics ? (
-            <StatisticsPage></StatisticsPage>
-          ) : (
-            <main className="flex flex-col w-full gap-4">
-              <Header />
-              <AppRoutes />
-            </main>
-          )}
-        </Wrapper>
+        <SearchProvider>
+          <Wrapper>
+            <Sidebar>
+              <SidebarItem
+                icon={<Dumbbell color={isDarkMode ? "white" : "#4a5565"} />}
+                text={"Тренировка"}
+                to="/workouts"
+              />
+              <SidebarItem
+                icon={<BicepsFlexed color={isDarkMode ? "white" : "#4a5565"} />}
+                text={"Упражнения"}
+                to="/exercises"
+              />
+              <SidebarItem
+                icon={<NotebookTabs color={isDarkMode ? "white" : "#4a5565"} />}
+                text={"Программы"}
+                to="/workoutPlans"
+              />
+              <SidebarItem
+                icon={
+                  <ChartNoAxesCombined
+                    color={isDarkMode ? "white" : "#4a5565"}
+                  />
+                }
+                text={"Cтатистика"}
+                to="/statistics"
+              />
+              <SidebarItem
+                icon={<Settings color={isDarkMode ? "white" : "#4a5565"} />}
+                text={"Настройки"}
+                to="/settings"
+              />
+            </Sidebar>
+            {isSettings ? (
+              <SettingsPage />
+            ) : isProfile ? (
+              <ProfilePage />
+            ) : isStatistics ? (
+              <StatisticsPage></StatisticsPage>
+            ) : (
+              <main className="flex flex-col w-full gap-4">
+                <Header />
+                <AppRoutes />
+              </main>
+            )}
+          </Wrapper>
+        </SearchProvider>
       )}
     </ConfigProvider>
   );

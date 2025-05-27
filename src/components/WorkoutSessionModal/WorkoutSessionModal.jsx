@@ -288,7 +288,7 @@ export default function WorkoutSessionModal({
 
       message.success("План тренировки успешно обновлен");
       setShowUpdatePlanModal(false);
-      onClose(); // Закрываем модальное окно после успешного обновления
+      onClose();
     } catch (error) {
       console.error("Ошибка при обновлении плана тренировки:", error);
       message.error("Не удалось обновить план тренировки: " + error.message);
@@ -543,25 +543,17 @@ export default function WorkoutSessionModal({
       label: "Тренировка",
       children: (
         <div className="mb-4">
-          <Form form={form} layout="vertical">
-            {/* Удалено поле для ввода названия тренировки */}
-          </Form>
-
-          <div className="mb-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-bold">Упражнения</h3>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">
-                  Общий вес: {totalWeight} кг
-                </span>
-                <Button
-                  type="primary"
-                  icon={<PlusCircle size={16} />}
-                  onClick={() => setExerciseModalOpen(true)}
-                >
-                  Добавить упражнение
-                </Button>
-              </div>
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-bold">Упражнения</h3>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold">Общий вес: {totalWeight} кг</span>
+              <Button
+                type="primary"
+                icon={<PlusCircle size={16} />}
+                onClick={() => setExerciseModalOpen(true)}
+              >
+                Добавить упражнение
+              </Button>
             </div>
 
             <Divider />
