@@ -1,6 +1,10 @@
 import { Button } from "antd";
 import React, { useState } from "react";
 import ExerciseInfoModal from "../ExerciseInfoModal/ExerciseInfoModal";
+import {
+  getExerciseTypeName,
+  getBodyPartName,
+} from "../../utils/exerciseTranslations";
 
 export default function ExerciseCard({ exercise, onDelete, onEdit }) {
   const [infoModalOpen, setInfoModalOpen] = useState(false);
@@ -29,38 +33,6 @@ export default function ExerciseCard({ exercise, onDelete, onEdit }) {
     }
   };
 
-  const getTypeName = (type) => {
-    const typeNames = {
-      STRENGTH: "Силовые",
-      CARDIO: "Кардио",
-      ENDURANCE: "Выносливость",
-    };
-    return typeNames[type] || type;
-  };
-
-  const getBodyPartName = (bodyPart) => {
-    if (!bodyPart) return "";
-
-    const bodyPartMap = {
-      chest: "Грудь",
-      back: "Спина",
-      biceps: "Бицепс",
-      triceps: "Трицепс",
-      shoulders: "Плечи",
-      legs: "Ноги",
-      abs: "Пресс",
-      arms: "Руки",
-      general: "Общая",
-      forearms: "Предплечья",
-      calves: "Икры",
-      glutes: "Ягодицы",
-      quads: "Четырехглавая",
-      hamstrings: "Задняя поверхность бедра",
-    };
-
-    return bodyPartMap[bodyPart] || bodyPart;
-  };
-
   return (
     <div className="flex justify-between items-center gap-5 w-full p-4 border rounded-xl border-indigo-300">
       <div className="flex gap-5">
@@ -76,7 +48,7 @@ export default function ExerciseCard({ exercise, onDelete, onEdit }) {
         <div className="flex flex-col justify-center">
           <h1 className="text-xl">{exercise.name}</h1>
           <p className="text-gray-400">
-            {getTypeName(exercise.category)} ·{" "}
+            {getExerciseTypeName(exercise.category)} ·{" "}
             {getBodyPartName(exercise.bodyPart)}
           </p>
         </div>

@@ -4,6 +4,10 @@ import React, { useEffect, useState } from "react";
 import ExerciseAdditionModal from "../AddExerciseModal/ExerciseAdditionModal";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 import { useAuth } from "../../context/AuthContext";
+import {
+  getExerciseTypeName,
+  getBodyPartName,
+} from "../../utils/exerciseTranslations";
 
 export default function ExerciseInfoModal({
   isOpen,
@@ -19,29 +23,6 @@ export default function ExerciseInfoModal({
 
   const { workoutService } = useWorkoutPlanner();
   const { currentUser } = useAuth();
-
-  const getTranslatedCategory = (categoryCode) => {
-    const categoryMap = {
-      STRENGTH: "Силовые",
-      Strength: "Силовые",
-      CARDIO: "Кардио",
-      Cardio: "Кардио",
-      ENDURANCE: "Выносливость",
-      Endurance: "Выносливость",
-    };
-
-    return categoryMap[categoryCode] || categoryCode;
-  };
-
-  const getOriginalCategoryType = (translatedCategory) => {
-    const categoryMap = {
-      Силовые: "STRENGTH",
-      Кардио: "CARDIO",
-      Выносливость: "ENDURANCE",
-    };
-
-    return categoryMap[translatedCategory] || "STRENGTH";
-  };
 
   useEffect(() => {
     setLoading(true);
@@ -183,15 +164,11 @@ export default function ExerciseInfoModal({
               className="w-full h-full object-cover"
             />
           </div>
-          <h1 className="text-3xl font-bold">{exercise?.name}</h1>
-          <div className="text-gray-600">
-            <p>
-              <b>Категория:</b>{" "}
-              {exercise ? getTranslatedCategory(exercise.category) : ""}
-            </p>
-            <p>
-              <b>Часть тела: </b>
-              {exercise?.bodyPart}
+          <div className="flex flex-col">
+            <h1 className="text-3xl font-bold">{exercise?.name}</h1>
+            <p className="text-gray-500">
+              {getExerciseTypeName(exercise?.category)} ·{" "}
+              {getBodyPartName(exercise?.bodyPart)}
             </p>
           </div>
           <div className="mb-5">
@@ -382,8 +359,8 @@ export default function ExerciseInfoModal({
           initialData={{
             id: exercise.id,
             name: exercise.name,
-            category: getOriginalCategoryType(exercise.category),
-            bodyPart: exercise.bodyPart,
+            category: getExerciseTypeName(exercise.category),
+            bodyPart: getBodyPartName(exercise.bodyPart),
             description: exercise.description,
             videoId: exercise.videoUrl,
             image: exercise.image,
