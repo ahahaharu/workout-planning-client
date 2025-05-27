@@ -9,7 +9,17 @@ import {
   Tag,
   message,
 } from "antd";
-import { Edit, Trash, Info, Calendar, Weight, Clock } from "lucide-react";
+import {
+  Edit,
+  Trash,
+  Info,
+  Calendar,
+  Weight,
+  Clock,
+  Navigation,
+  Flame,
+  BarChart,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 import ExerciseInfoModal from "../ExerciseInfoModal/ExerciseInfoModal";
@@ -56,6 +66,9 @@ export default function WorkoutInfoModal({
                     fullExercise.cardioType,
                   sets: exercise.sets || [],
                   completedSets: exercise.completedSets || exercise.sets || [],
+                  sessions: exercise.sessions || [],
+                  completedSessions:
+                    exercise.completedSessions || exercise.sessions || [],
                 };
               }
               return exercise;
@@ -118,6 +131,7 @@ export default function WorkoutInfoModal({
     return bodyPartMap[bodyPart] || bodyPart;
   };
 
+  // Функция для рендеринга подходов силовых упражнений
   const renderExerciseSets = (exercise) => {
     const sets = exercise.completedSets || exercise.sets || [];
 
@@ -150,6 +164,159 @@ export default function WorkoutInfoModal({
     );
   };
 
+  // Функция для рендеринга сессий кардио упражнений
+  const renderCardioSessions = (exercise) => {
+    const sessions = exercise.completedSessions || exercise.sessions || [];
+
+    if (!sessions || sessions.length === 0) {
+      return <p className="text-gray-500 text-sm">Нет записанных сессий</p>;
+    }
+
+    return (
+      <div className="mt-2">
+        <div className="bg-gray-50 rounded-lg p-2">
+          <div className="grid grid-cols-16 mb-2 font-semibold text-sm">
+            <div className="col-span-2 text-center">№</div>
+            <div className="col-span-4 text-center">
+              <span className="flex items-center justify-center">
+                <Clock size={14} className="mr-1" /> Время (мин)
+              </span>
+            </div>
+            <div className="col-span-5 text-center">
+              <span className="flex items-center justify-center">
+                <Navigation size={14} className="mr-1" /> Дистанция (км)
+              </span>
+            </div>
+            <div className="col-span-5 text-center">
+              <span className="flex items-center justify-center">
+                <Flame size={14} className="mr-1" /> Калории
+              </span>
+            </div>
+          </div>
+          {sessions.map((session, sessionIndex) => (
+            <div
+              key={sessionIndex}
+              className="grid grid-cols-16 items-center py-1 border-b last:border-b-0"
+            >
+              <div className="col-span-2 text-center font-semibold">
+                {sessionIndex + 1}
+              </div>
+              <div className="col-span-4 text-center">
+                {session.duration || 0}
+              </div>
+              <div className="col-span-5 text-center">
+                {session.distance || 0}
+              </div>
+              <div className="col-span-5 text-center">
+                {session.caloriesBurned || 0}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Функция для рендеринга сессий упражнений на выносливость
+  const renderEnduranceSessions = (exercise) => {
+    const sessions = exercise.completedSessions || exercise.sessions || [];
+
+    if (!sessions || sessions.length === 0) {
+      return <p className="text-gray-500 text-sm">Нет записанных сессий</p>;
+    }
+
+    return (
+      <div className="mt-2">
+        <div className="bg-gray-50 rounded-lg p-2">
+          <div className="grid grid-cols-12 mb-2 font-semibold text-sm">
+            <div className="col-span-2 text-center">№</div>
+            <div className="col-span-5 text-center">
+              <span className="flex items-center justify-center">
+                <Clock size={14} className="mr-1" /> Время (мин)
+              </span>
+            </div>
+            <div className="col-span-5 text-center">
+              <span className="flex items-center justify-center">
+                <BarChart size={14} className="mr-1" /> Сложность (1-10)
+              </span>
+            </div>
+          </div>
+          {sessions.map((session, sessionIndex) => (
+            <div
+              key={sessionIndex}
+              className="grid grid-cols-12 items-center py-1 border-b last:border-b-0"
+            >
+              <div className="col-span-2 text-center font-semibold">
+                {sessionIndex + 1}
+              </div>
+              <div className="col-span-5 text-center">
+                {session.duration || 0}
+              </div>
+              <div className="col-span-5 text-center">
+                {session.difficulty || 0}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Функция для определения, какие данные упражнения отображать
+  const renderExerciseData = (exercise) => {
+    const exerciseType = (exercise.type || "").toUpperCase();
+
+    if (exerciseType === "STRENGTH") {
+      return renderExerciseSets(exercise);
+    } else if (exerciseType === "CARDIO") {
+      return renderCardioSessions(exercise);
+    } else if (exerciseType === "ENDURANCE") {
+      return renderEnduranceSessions(exercise);
+    }
+
+    return null;
+  };
+
+  // Функция для расчета суммарных метрик тренировки
+  const calculateWorkoutMetrics = (workout) => {
+    if (!workout || !workout.exercises) return {};
+
+    let totalWeight = 0;
+    let totalDistance = 0;
+    let totalDuration = 0;
+    let totalCalories = 0;
+
+    workout.exercises.forEach((exercise) => {
+      const exerciseType = (exercise.type || "").toUpperCase();
+
+      if (exerciseType === "STRENGTH") {
+        const sets = exercise.completedSets || exercise.sets || [];
+        sets.forEach((set) => {
+          totalWeight += (Number(set.weight) || 0) * (Number(set.reps) || 0);
+        });
+      } else if (exerciseType === "CARDIO") {
+        const sessions = exercise.completedSessions || exercise.sessions || [];
+        sessions.forEach((session) => {
+          totalDistance += Number(session.distance) || 0;
+          totalDuration += Number(session.duration) || 0;
+          totalCalories += Number(session.caloriesBurned) || 0;
+        });
+      } else if (exerciseType === "ENDURANCE") {
+        const sessions = exercise.completedSessions || exercise.sessions || [];
+        sessions.forEach((session) => {
+          totalDuration += Number(session.duration) || 0;
+        });
+      }
+    });
+
+    return {
+      totalWeight,
+      totalDistance,
+      totalDuration,
+      totalCalories,
+    };
+  };
+
   const handleViewExerciseDetails = (exercise) => {
     setSelectedExercise({
       id: exercise.id,
@@ -166,14 +333,14 @@ export default function WorkoutInfoModal({
     setExerciseDetailModalOpen(true);
   };
 
-  const formatTime = (seconds) => {
-    if (!seconds || seconds === 0) return "Не указано";
+  const formatTime = (minutes) => {
+    if (!minutes || minutes === 0) return "Не указано";
 
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+    const hours = Math.floor(minutes / 60);
+    const mins = Math.floor(minutes % 60);
 
     if (hours > 0) {
-      return `${hours} ч ${minutes} мин`;
+      return `${hours} ч ${mins > 0 ? mins + " мин" : ""}`;
     } else {
       return `${minutes} мин`;
     }
@@ -198,6 +365,10 @@ export default function WorkoutInfoModal({
         sets: exercise.sets || [],
         completedSets: exercise.completedSets || exercise.sets || [],
         originalSets: exercise.sets || [],
+        sessions: exercise.sessions || [],
+        completedSessions:
+          exercise.completedSessions || exercise.sessions || [],
+        originalSessions: exercise.sessions || [],
       })),
       planId: enhancedWorkout.planId,
       totalWeight: enhancedWorkout.totalWeight || 0,
@@ -242,6 +413,11 @@ export default function WorkoutInfoModal({
     );
   }
 
+  // Расчет метрик для отображения
+  const metrics = enhancedWorkout
+    ? calculateWorkoutMetrics(enhancedWorkout)
+    : {};
+
   const items = [
     {
       key: "1",
@@ -259,17 +435,42 @@ export default function WorkoutInfoModal({
                 <p>{enhancedWorkout?.date || "Дата не указана"}</p>
               </div>
             </Tag>
-            <Tag color="green">
-              <div className="flex items-center gap-2 my-1.5 mx-1">
-                <Weight size={14} />
-                <p>
-                  {enhancedWorkout?.totalWeight
-                    ? `${enhancedWorkout.totalWeight}
-                кг`
-                    : "Вес не указан"}
-                </p>
-              </div>
-            </Tag>
+
+            {metrics.totalWeight > 0 && (
+              <Tag color="green">
+                <div className="flex items-center gap-2 my-1.5 mx-1">
+                  <Weight size={14} />
+                  <p>{metrics.totalWeight} кг</p>
+                </div>
+              </Tag>
+            )}
+
+            {metrics.totalDistance > 0 && (
+              <Tag color="cyan">
+                <div className="flex items-center gap-2 my-1.5 mx-1">
+                  <Navigation size={14} />
+                  <p>{metrics.totalDistance.toFixed(1)} км</p>
+                </div>
+              </Tag>
+            )}
+
+            {metrics.totalDuration > 0 && (
+              <Tag color="purple">
+                <div className="flex items-center gap-2 my-1.5 mx-1">
+                  <Clock size={14} />
+                  <p>{formatTime(metrics.totalDuration)}</p>
+                </div>
+              </Tag>
+            )}
+
+            {metrics.totalCalories > 0 && (
+              <Tag color="orange">
+                <div className="flex items-center gap-2 my-1.5 mx-1">
+                  <Flame size={14} />
+                  <p>{metrics.totalCalories} ккал</p>
+                </div>
+              </Tag>
+            )}
           </div>
 
           <div>
@@ -324,9 +525,7 @@ export default function WorkoutInfoModal({
                       </div>
                     </div>
 
-                    {(exercise.type === "STRENGTH" ||
-                      exercise.type === "Strength") &&
-                      renderExerciseSets(exercise)}
+                    {renderExerciseData(exercise)}
                   </div>
                 </Card>
               ))}

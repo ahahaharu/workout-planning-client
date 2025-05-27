@@ -155,6 +155,40 @@ export default function WorkoutsPage() {
               console.error("Ошибка при расчете общего веса:", error);
             }
 
+            let totalDistance = 0;
+            let totalDuration = 0;
+            let totalCalories = 0;
+
+            try {
+              enrichedExercises.forEach((exercise) => {
+                const exerciseType = (exercise.type || "").toUpperCase();
+
+                // Для кардио упражнений
+                if (exerciseType === "CARDIO") {
+                  const sessions =
+                    exercise.completedSessions || exercise.sessions || [];
+                  sessions.forEach((session) => {
+                    totalDistance += Number(session.distance) || 0;
+                    totalDuration += Number(session.duration) || 0;
+                    totalCalories += Number(session.caloriesBurned) || 0;
+                  });
+                }
+                // Для упражнений на выносливость
+                else if (exerciseType === "ENDURANCE") {
+                  const sessions =
+                    exercise.completedSessions || exercise.sessions || [];
+                  sessions.forEach((session) => {
+                    totalDuration += Number(session.duration) || 0;
+                  });
+                }
+              });
+            } catch (error) {
+              console.error(
+                "Ошибка при расчете метрик кардио и выносливости:",
+                error
+              );
+            }
+
             return {
               id: workout.id,
               name: workoutName,
@@ -162,6 +196,9 @@ export default function WorkoutsPage() {
               rawDate: rawDate,
               exercises: enrichedExercises,
               totalWeight: totalWeight,
+              totalDistance: totalDistance,
+              totalDuration: totalDuration,
+              totalCalories: totalCalories,
               duration: workout.duration || 0,
               planId: workout.plan ? workout.plan.id : null,
               description:
@@ -293,50 +330,91 @@ export default function WorkoutsPage() {
 
         const exercisesWithData = [];
 
-        if (isPlanWorkout) {
-          for (const exercise of workoutData.exercises) {
-            const sets = exercise.completedSets || exercise.sets || [];
+        for (const exercise of workoutData.exercises) {
+          workoutService.addExerciseToWorkout(workout.id, exercise.id);
 
-            if (sets.length > 0) {
-              exercisesWithData.push({
-                ...exercise,
-                sets: sets,
-              });
-            }
-          }
-        } else {
-          for (const exercise of workoutData.exercises) {
-            const sets = exercise.completedSets || exercise.sets || [];
-
-            if (sets.length > 0) {
-              workoutService.addExerciseToWorkout(workout.id, exercise.id);
-
-              if (
-                exercise.type === "STRENGTH" ||
-                exercise.type === "Strength"
-              ) {
-                for (const set of sets) {
-                  try {
-                    workoutService.recordSetInWorkout(
-                      workout.id,
-                      exercise.id,
-                      Number(set.reps) || 0,
-                      Number(set.weight) || 0
-                    );
-                  } catch (error) {
-                    console.error(
-                      `Ошибка при добавлении подхода для ${exercise.name}:`,
-                      error
-                    );
-                  }
-                }
+          if (
+            (exercise.type === "STRENGTH" || exercise.type === "Strength") &&
+            exercise.completedSets &&
+            exercise.completedSets.length > 0
+          ) {
+            const sets = exercise.completedSets || [];
+            for (const set of sets) {
+              try {
+                workoutService.recordSetInWorkout(
+                  workout.id,
+                  exercise.id,
+                  Number(set.reps) || 0,
+                  Number(set.weight) || 0
+                );
+              } catch (error) {
+                console.error(
+                  `Ошибка при добавлении подхода для ${exercise.name}:`,
+                  error
+                );
               }
-
-              exercisesWithData.push({
-                ...exercise,
-                sets: sets,
-              });
             }
+
+            exercisesWithData.push({
+              ...exercise,
+              sets: sets,
+              sessions: [],
+            });
+          } else if (
+            (exercise.type === "CARDIO" || exercise.type === "Cardio") &&
+            exercise.completedSessions &&
+            exercise.completedSessions.length > 0
+          ) {
+            const sessions = exercise.completedSessions || [];
+            for (const session of sessions) {
+              try {
+                workoutService.recordCardioSessionInWorkout(
+                  workout.id,
+                  exercise.id,
+                  Number(session.duration) || 0,
+                  Number(session.distance) || 0,
+                  Number(session.caloriesBurned) || 0
+                );
+              } catch (error) {
+                console.error(
+                  `Ошибка при добавлении кардио сессии для ${exercise.name}:`,
+                  error
+                );
+              }
+            }
+
+            exercisesWithData.push({
+              ...exercise,
+              sets: [],
+              sessions: sessions,
+            });
+          } else if (
+            (exercise.type === "ENDURANCE" || exercise.type === "Endurance") &&
+            exercise.completedSessions &&
+            exercise.completedSessions.length > 0
+          ) {
+            const sessions = exercise.completedSessions || [];
+            for (const session of sessions) {
+              try {
+                workoutService.recordEnduranceSessionInWorkout(
+                  workout.id,
+                  exercise.id,
+                  Number(session.duration) || 0,
+                  Number(session.difficulty) || 5
+                );
+              } catch (error) {
+                console.error(
+                  `Ошибка при добавлении сессии выносливости для ${exercise.name}:`,
+                  error
+                );
+              }
+            }
+
+            exercisesWithData.push({
+              ...exercise,
+              sets: [],
+              sessions: sessions,
+            });
           }
         }
 
@@ -431,25 +509,71 @@ export default function WorkoutsPage() {
         for (const exercise of editedWorkoutData.exercises) {
           workoutService.addExerciseToWorkout(workoutId, exercise.id);
 
-          const sets = exercise.completedSets || exercise.sets || [];
-
           if (
-            sets.length > 0 &&
-            (exercise.type === "STRENGTH" || exercise.type === "Strength")
+            (exercise.type === "STRENGTH" || exercise.type === "Strength") &&
+            (exercise.completedSets || exercise.sets)
           ) {
-            for (const set of sets) {
-              try {
-                workoutService.recordSetInWorkout(
-                  workoutId,
-                  exercise.id,
-                  Number(set.reps) || 0,
-                  Number(set.weight) || 0
-                );
-              } catch (error) {
-                console.error(
-                  `Ошибка при добавлении подхода для ${exercise.name}:`,
-                  error
-                );
+            const sets = exercise.completedSets || exercise.sets || [];
+            if (sets.length > 0) {
+              for (const set of sets) {
+                try {
+                  workoutService.recordSetInWorkout(
+                    workoutId,
+                    exercise.id,
+                    Number(set.reps) || 0,
+                    Number(set.weight) || 0
+                  );
+                } catch (error) {
+                  console.error(
+                    `Ошибка при добавлении подхода для ${exercise.name}:`,
+                    error
+                  );
+                }
+              }
+            }
+          } else if (
+            (exercise.type === "CARDIO" || exercise.type === "Cardio") &&
+            exercise.completedSessions
+          ) {
+            const sessions = exercise.completedSessions || [];
+            if (sessions.length > 0) {
+              for (const session of sessions) {
+                try {
+                  workoutService.recordCardioSessionInWorkout(
+                    workoutId,
+                    exercise.id,
+                    Number(session.duration) || 0,
+                    Number(session.distance) || 0,
+                    Number(session.caloriesBurned) || 0
+                  );
+                } catch (error) {
+                  console.error(
+                    `Ошибка при добавлении кардио сессии для ${exercise.name}:`,
+                    error
+                  );
+                }
+              }
+            }
+          } else if (
+            (exercise.type === "ENDURANCE" || exercise.type === "Endurance") &&
+            exercise.completedSessions
+          ) {
+            const sessions = exercise.completedSessions || [];
+            if (sessions.length > 0) {
+              for (const session of sessions) {
+                try {
+                  workoutService.recordEnduranceSessionInWorkout(
+                    workoutId,
+                    exercise.id,
+                    Number(session.duration) || 0,
+                    Number(session.difficulty) || 5
+                  );
+                } catch (error) {
+                  console.error(
+                    `Ошибка при добавлении сессии выносливости для ${exercise.name}:`,
+                    error
+                  );
+                }
               }
             }
           }
