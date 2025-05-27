@@ -1,45 +1,24 @@
 import React, { useState, useEffect } from "react";
 import PageLayout from "../../components/PageLayout/PageLayout";
-import {
-  Button,
-  Card,
-  Spin,
-  Empty,
-  Form,
-  Input,
-  Modal,
-  message,
-  DatePicker,
-  Tooltip,
-  Divider,
-} from "antd";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as ChartTooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { message, Divider } from "antd";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 import { useAuth } from "../../context/AuthContext";
-import {
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  CalendarOutlined,
-  ReloadOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
 
-const { RangePicker } = DatePicker;
+// Импортируем компоненты
+import WeightStatistics from "../../components/WeightStatistics/WeightStatistics";
+import WorkoutStatistics from "../../components/WorkoutStatistics/WorkoutStatistics";
+import WeightUpdateModal from "../../components/WeightUpdateModal/WeightUpdateModal";
 
 export default function StatisticsPage() {
   const [weightStats, setWeightStats] = useState(null);
+  const [workoutStats, setWorkoutStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [workoutLoading, setWorkoutLoading] = useState(true);
   const [isWeightModalVisible, setIsWeightModalVisible] = useState(false);
-  const [weightForm] = Form.useForm();
-  const [dateRange, setDateRange] = useState([null, null]);
+
+  // Разделяем диапазоны дат для каждого раздела
+  const [weightDateRange, setWeightDateRange] = useState([null, null]);
+  const [workoutDateRange, setWorkoutDateRange] = useState([null, null]);
 
   const { workoutPlanner, statisticsService, userService } =
     useWorkoutPlanner();
@@ -52,7 +31,72 @@ export default function StatisticsPage() {
       workoutPlanner.storageManager.syncLocalStorageWithLibrary(workoutPlanner);
     }
     loadWeightData();
+    loadWorkoutData();
   }, [currentUser, statisticsService]);
+
+  // Вспомогательные функции
+  const formatDate = (date) => {
+    if (!date) return "";
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(date).toLocaleDateString("ru-RU", options);
+  };
+
+  const formatDuration = (minutes) => {
+    if (!minutes || minutes === 0) return "0 мин";
+    const hours = Math.floor(minutes / 60);
+    const mins = Math.round(minutes % 60);
+    if (hours > 0) {
+      return `${hours} ч ${mins > 0 ? mins + " мин" : ""}`;
+    } else {
+      return `${mins} мин`;
+    }
+  };
+
+  // Функции загрузки данных
+  const loadWorkoutData = (startDate = null, endDate = null) => {
+    if (!currentUser || !statisticsService) {
+      setWorkoutLoading(false);
+      return;
+    }
+
+    setWorkoutLoading(true);
+    try {
+      const workoutProgress = statisticsService.getWorkoutProgress(
+        currentUser.id,
+        startDate,
+        endDate
+      );
+
+      if (workoutProgress && workoutProgress.workoutsByDate) {
+        const sortedWorkouts = [...workoutProgress.workoutsByDate].sort(
+          (a, b) => new Date(a.date) - new Date(b.date)
+        );
+
+        setWorkoutStats({
+          ...workoutProgress,
+          workoutsByDate: sortedWorkouts,
+        });
+      } else {
+        setWorkoutStats({
+          totalWeightProgress: 0,
+          totalDistanceProgress: 0,
+          totalDurationProgress: 0,
+          workoutsByDate: [],
+        });
+      }
+    } catch (error) {
+      console.error("Ошибка при загрузке данных о тренировках:", error);
+      message.error("Не удалось загрузить статистику тренировок");
+      setWorkoutStats({
+        totalWeightProgress: 0,
+        totalDistanceProgress: 0,
+        totalDurationProgress: 0,
+        workoutsByDate: [],
+      });
+    } finally {
+      setWorkoutLoading(false);
+    }
+  };
 
   const loadWeightData = (startDate = null, endDate = null) => {
     if (!currentUser) {
@@ -62,11 +106,7 @@ export default function StatisticsPage() {
 
     setLoading(true);
     try {
-      console.log("Загрузка данных о весе пользователя:", currentUser.id);
-
       if (currentUser.weightHistory && currentUser.weightHistory.length > 0) {
-        console.log("История веса пользователя:", currentUser.weightHistory);
-
         const start = startDate ? new Date(startDate) : null;
         const end = endDate ? new Date(endDate) : null;
 
@@ -111,7 +151,6 @@ export default function StatisticsPage() {
             startDate,
             endDate
           );
-          console.log("Данные о весе из сервиса:", weightProgress);
           setWeightStats(weightProgress);
         } catch (error) {
           console.error("Ошибка при загрузке прогресса веса:", error);
@@ -121,7 +160,6 @@ export default function StatisticsPage() {
           });
         }
       } else {
-        console.warn("Нет данных о весе и сервис статистики недоступен");
         setWeightStats({
           dateWeights: [],
           userWeightProgress: 0,
@@ -139,15 +177,16 @@ export default function StatisticsPage() {
     }
   };
 
-  const handleDateRangeChange = (dates) => {
+  // Обработчики событий для веса
+  const handleWeightDateRangeChange = (dates) => {
     if (!dates || dates.length !== 2) {
-      setDateRange([null, null]);
+      setWeightDateRange([null, null]);
       loadWeightData();
       return;
     }
 
     const [start, end] = dates;
-    setDateRange([start, end]);
+    setWeightDateRange([start, end]);
 
     const startDate = start ? start.toDate() : null;
     const endDate = end ? end.toDate() : null;
@@ -155,15 +194,17 @@ export default function StatisticsPage() {
     loadWeightData(startDate, endDate);
   };
 
-  const resetDateFilter = () => {
-    setDateRange([null, null]);
+  const resetWeightDateFilter = () => {
+    setWeightDateRange([null, null]);
     loadWeightData();
   };
 
   const showWeightModal = () => {
-    weightForm.resetFields();
-    weightForm.setFieldsValue({ weight: currentUser?.currentWeight });
     setIsWeightModalVisible(true);
+  };
+
+  const handleWeightModalClose = () => {
+    setIsWeightModalVisible(false);
   };
 
   const handleUpdateWeight = (values) => {
@@ -190,8 +231,10 @@ export default function StatisticsPage() {
 
         message.success("Вес успешно обновлен");
 
-        const startDate = dateRange[0] ? dateRange[0].toDate() : null;
-        const endDate = dateRange[1] ? dateRange[1].toDate() : null;
+        const startDate = weightDateRange[0]
+          ? weightDateRange[0].toDate()
+          : null;
+        const endDate = weightDateRange[1] ? weightDateRange[1].toDate() : null;
         setTimeout(() => loadWeightData(startDate, endDate), 300);
       } else {
         message.warning("Сервис пользователей недоступен");
@@ -202,38 +245,27 @@ export default function StatisticsPage() {
     }
   };
 
-  const formatDate = (date) => {
-    if (!date) return "";
+  // Обработчики событий для тренировок
+  const handleWorkoutDateRangeChange = (dates) => {
+    if (!dates || dates.length !== 2) {
+      setWorkoutDateRange([null, null]);
+      loadWorkoutData();
+      return;
+    }
 
-    const options = { year: "numeric", month: "long", day: "numeric" };
-    return new Date(date).toLocaleDateString("ru-RU", options);
+    const [start, end] = dates;
+    setWorkoutDateRange([start, end]);
+
+    const startDate = start ? start.toDate() : null;
+    const endDate = end ? end.toDate() : null;
+
+    loadWorkoutData(startDate, endDate);
   };
 
-  const dateFilter = (
-    <div className="mb-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <CalendarOutlined className="mr-2" />
-          <span className="mr-2">Период:</span>
-          <RangePicker
-            value={dateRange}
-            onChange={handleDateRangeChange}
-            allowClear={true}
-            format="DD.MM.YYYY"
-          />
-        </div>
-        <Tooltip title="Сбросить фильтр">
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={resetDateFilter}
-            disabled={!dateRange[0] && !dateRange[1]}
-          >
-            Сбросить
-          </Button>
-        </Tooltip>
-      </div>
-    </div>
-  );
+  const resetWorkoutDateFilter = () => {
+    setWorkoutDateRange([null, null]);
+    loadWorkoutData();
+  };
 
   return (
     <PageLayout title="Статистика">
@@ -241,134 +273,37 @@ export default function StatisticsPage() {
         <p className="text-xl">Вес</p>
       </Divider>
 
-      {dateFilter}
+      <WeightStatistics
+        stats={weightStats}
+        loading={loading}
+        dateRange={weightDateRange}
+        onDateRangeChange={handleWeightDateRangeChange}
+        onDateRangeReset={resetWeightDateFilter}
+        onAddWeight={showWeightModal}
+        currentUser={currentUser}
+        formatDate={formatDate}
+      />
 
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <Spin size="large" />
-        </div>
-      ) : !weightStats ||
-        !weightStats.dateWeights ||
-        weightStats.dateWeights.length === 0 ? (
-        <Card>
-          <Empty
-            description={
-              dateRange[0] || dateRange[1]
-                ? "Нет данных о весе в выбранном диапазоне дат"
-                : "Нет данных о весе"
-            }
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          />
-          <div className="flex justify-center mt-4">
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={showWeightModal}
-            >
-              Добавить запись о весе
-            </Button>
-          </div>
-        </Card>
-      ) : (
-        <>
-          <Card className="mb-6">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h1 className="text-2xl font-bold">
-                  Текущий вес: {currentUser.currentWeight} кг
-                </h1>
-                {weightStats.dateWeights.length > 1 && (
-                  <p className="text-gray-500 flex items-center mt-2">
-                    {weightStats.userWeightProgress > 0 ? (
-                      <ArrowUpOutlined style={{ color: "#cf1322" }} />
-                    ) : (
-                      <ArrowDownOutlined style={{ color: "#3f8600" }} />
-                    )}
-                    <span className="ml-1">
-                      {Math.abs(weightStats.userWeightProgress).toFixed(1)} кг с{" "}
-                      {formatDate(weightStats.dateWeights[0].date)}
-                    </span>
-                    {dateRange[0] && dateRange[1] && " (в выбранном периоде)"}
-                  </p>
-                )}
-              </div>
-              <Button type="primary" size="large" onClick={showWeightModal}>
-                Обновить вес
-              </Button>
-            </div>
+      <Divider>
+        <p className="text-xl">Тренировки</p>
+      </Divider>
 
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={weightStats.dateWeights.map((item) => ({
-                    date: formatDate(item.date),
-                    weight: item.weight,
-                  }))}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis domain={["dataMin - 1", "dataMax + 1"]} />
-                  <ChartTooltip formatter={(value) => [`${value} кг`, "Вес"]} />
-                  <Line
-                    type="monotone"
-                    dataKey="weight"
-                    stroke="#818cf8"
-                    strokeWidth={2}
-                    activeDot={{ r: 8 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </>
-      )}
+      <WorkoutStatistics
+        stats={workoutStats}
+        loading={workoutLoading}
+        dateRange={workoutDateRange}
+        onDateRangeChange={handleWorkoutDateRangeChange}
+        onDateRangeReset={resetWorkoutDateFilter}
+        formatDate={formatDate}
+        formatDuration={formatDuration}
+      />
 
-      <Modal
-        title="Обновить текущий вес"
-        open={isWeightModalVisible}
-        onCancel={() => setIsWeightModalVisible(false)}
-        footer={null}
-        destroyOnClose={true}
-      >
-        <Form
-          form={weightForm}
-          layout="vertical"
-          onFinish={handleUpdateWeight}
-          initialValues={{ weight: currentUser?.currentWeight }}
-        >
-          <Form.Item
-            name="weight"
-            label="Новый вес (кг)"
-            rules={[
-              {
-                required: true,
-                message: "Пожалуйста, введите ваш текущий вес",
-              },
-              {
-                type: "number",
-                min: 30,
-                max: 300,
-                transform: (value) => Number(value),
-                message: "Вес должен быть между 30 и 300 кг",
-              },
-            ]}
-          >
-            <Input type="number" />
-          </Form.Item>
-
-          <Form.Item>
-            <div className="flex justify-end space-x-2">
-              <Button onClick={() => setIsWeightModalVisible(false)}>
-                Отмена
-              </Button>
-              <Button type="primary" htmlType="submit">
-                Обновить
-              </Button>
-            </div>
-          </Form.Item>
-        </Form>
-      </Modal>
+      <WeightUpdateModal
+        visible={isWeightModalVisible}
+        onClose={handleWeightModalClose}
+        onSubmit={handleUpdateWeight}
+        initialValue={currentUser?.currentWeight}
+      />
     </PageLayout>
   );
 }

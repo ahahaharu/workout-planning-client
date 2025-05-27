@@ -6,7 +6,7 @@ export default function PageLayout({ title, children }) {
 
   return (
     <div
-      className={`h-full w-full p-6 rounded-2xl shadow-md border ${
+      className={`h-full w-full p-6 rounded-2xl shadow-md border overflow-x-hidden overflow-y-auto ${
         isDarkMode
           ? "bg-[#211e26] border-indigo-800 text-gray-200"
           : "bg-white border-indigo-200 text-gray-800"
