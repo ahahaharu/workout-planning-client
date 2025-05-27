@@ -8,6 +8,7 @@ import { useAuth } from "../../context/AuthContext";
 import WeightStatistics from "../../components/WeightStatistics/WeightStatistics";
 import WorkoutStatistics from "../../components/WorkoutStatistics/WorkoutStatistics";
 import WeightUpdateModal from "../../components/WeightUpdateModal/WeightUpdateModal";
+import ExerciseStatistics from "../../components/ExerciseStatistics/ExerciseStatistics";
 
 export default function StatisticsPage() {
   const [weightStats, setWeightStats] = useState(null);
@@ -16,12 +17,24 @@ export default function StatisticsPage() {
   const [workoutLoading, setWorkoutLoading] = useState(true);
   const [isWeightModalVisible, setIsWeightModalVisible] = useState(false);
 
+  // Состояния для статистики упражнений
+  const [exercises, setExercises] = useState([]);
+  const [exercisesLoading, setExercisesLoading] = useState(true);
+  const [selectedExerciseId, setSelectedExerciseId] = useState(null);
+  const [exerciseStats, setExerciseStats] = useState(null);
+  const [exerciseStatsLoading, setExerciseStatsLoading] = useState(false);
+
   // Разделяем диапазоны дат для каждого раздела
   const [weightDateRange, setWeightDateRange] = useState([null, null]);
   const [workoutDateRange, setWorkoutDateRange] = useState([null, null]);
 
-  const { workoutPlanner, statisticsService, userService } =
-    useWorkoutPlanner();
+  const {
+    workoutPlanner,
+    statisticsService,
+    userService,
+    exerciseService,
+    workoutService,
+  } = useWorkoutPlanner();
 
   const { currentUser, updateCurrentUser } = useAuth();
 
@@ -32,7 +45,84 @@ export default function StatisticsPage() {
     }
     loadWeightData();
     loadWorkoutData();
-  }, [currentUser, statisticsService]);
+    loadUserExercises();
+  }, [currentUser, statisticsService, workoutService, exerciseService]);
+
+  // Загрузка списка упражнений, которые пользователь использовал в тренировках
+  const loadUserExercises = () => {
+    if (!currentUser || !workoutService || !exerciseService) {
+      setExercisesLoading(false);
+      return;
+    }
+
+    setExercisesLoading(true);
+    try {
+      // Получаем все тренировки пользователя
+      const userWorkouts = workoutService.getWorkoutsForUser(currentUser.id);
+
+      // Собираем уникальные ID упражнений из всех тренировок
+      const exerciseIds = new Set();
+      userWorkouts.forEach((workout) => {
+        if (workout.exercises && workout.exercises.length > 0) {
+          workout.exercises.forEach((exercise) => {
+            exerciseIds.add(exercise.id);
+          });
+        }
+      });
+
+      // Получаем полные данные упражнений из сервиса упражнений
+      const userExercises = [];
+      exerciseIds.forEach((id) => {
+        try {
+          const exercise = exerciseService.getExerciseById(id);
+          if (exercise) {
+            userExercises.push(exercise);
+          }
+        } catch (error) {
+          console.error(`Ошибка при получении упражнения с ID ${id}:`, error);
+        }
+      });
+
+      // Сортируем упражнения по имени
+      userExercises.sort((a, b) => a.name.localeCompare(b.name));
+
+      setExercises(userExercises);
+      console.log(`Загружено ${userExercises.length} упражнений пользователя`);
+    } catch (error) {
+      console.error("Ошибка при загрузке упражнений пользователя:", error);
+      message.error("Не удалось загрузить список упражнений");
+    } finally {
+      setExercisesLoading(false);
+    }
+  };
+
+  // Обработчик выбора упражнения для просмотра статистики
+  const handleExerciseSelect = (exerciseId) => {
+    if (!exerciseId || !statisticsService || !currentUser) {
+      setExerciseStats(null);
+      setSelectedExerciseId(null);
+      return;
+    }
+
+    setSelectedExerciseId(exerciseId);
+    setExerciseStatsLoading(true);
+
+    try {
+      const stats = statisticsService.getExerciseProgress(
+        currentUser.id,
+        exerciseId
+      );
+
+      console.log("Загружена статистика упражнения:", stats);
+      setExerciseStats(stats);
+    } catch (error) {
+      console.error("Ошибка при загрузке статистики упражнения:", error);
+      message.error("Не удалось загрузить статистику упражнения");
+      setExerciseStats(null);
+    } finally {
+      setExerciseStatsLoading(false);
+    }
+  };
 
   // Вспомогательные функции
   const formatDate = (date) => {
@@ -296,6 +386,19 @@ export default function StatisticsPage() {
         onDateRangeReset={resetWorkoutDateFilter}
         formatDate={formatDate}
         formatDuration={formatDuration}
+      />
+
+      <Divider>
+        <p className="text-xl">Упражнения</p>
+      </Divider>
+
+      <ExerciseStatistics
+        exercises={exercises}
+        loading={exercisesLoading}
+        exerciseStats={exerciseStats}
+        statsLoading={exerciseStatsLoading}
+        onExerciseSelect={handleExerciseSelect}
+        formatDate={formatDate}
       />
 
       <WeightUpdateModal
