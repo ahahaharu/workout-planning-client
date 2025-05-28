@@ -92,12 +92,18 @@ export default function WorkoutPlansPage() {
   const handleSaveWorkoutPlan = (planData, existingPlanId) => {
     if (workoutPlanService && currentUser) {
       try {
-        if (existingPlanId) {
+        if (typeof existingPlanId === "number") {
           const currentPlan =
             workoutPlanService.getWorkoutPlanById(existingPlanId);
 
           if (!currentPlan) {
-            throw new Error("План не найден");
+            message.error(
+              `План с ID ${existingPlanId} не найден для обновления.`
+            );
+            console.error(
+              `План с ID ${existingPlanId} не найден для обновления.`
+            );
+            return;
           }
 
           currentPlan.name = planData.name;
@@ -111,8 +117,9 @@ export default function WorkoutPlansPage() {
             workoutPlanService._saveWorkoutPlans();
           }
 
-          if (currentPlan && currentPlan.exercises) {
-            [...currentPlan.exercises].forEach((ex) => {
+          if (currentPlan.exercises) {
+            const exercisesToRemove = [...currentPlan.exercises];
+            exercisesToRemove.forEach((ex) => {
               workoutPlanService.removeExerciseFromWorkoutPlan(
                 existingPlanId,
                 ex.id
@@ -126,7 +133,6 @@ export default function WorkoutPlansPage() {
               exercise.id
             );
 
-            // Для силовых упражнений
             if (
               (exercise.type === "STRENGTH" || exercise.type === "Strength") &&
               exercise.sets &&
@@ -152,10 +158,7 @@ export default function WorkoutPlansPage() {
                   console.error("Error adding set:", error);
                 }
               });
-            }
-
-            // Для кардио упражнений
-            else if (
+            } else if (
               (exercise.type === "CARDIO" || exercise.type === "Cardio") &&
               exercise.sessions &&
               exercise.sessions.length > 0
@@ -167,7 +170,7 @@ export default function WorkoutPlansPage() {
                   const caloriesBurned = Number(session.caloriesBurned);
 
                   if (!isNaN(duration) && !isNaN(distance)) {
-                    workoutPlanService.addCardioSessionToExerciseInWorkoutPlan(
+                    workoutPlanService.addSessionToExerciseInWorkoutPlan(
                       existingPlanId,
                       exercise.id,
                       duration,
@@ -181,10 +184,7 @@ export default function WorkoutPlansPage() {
                   console.error("Error adding cardio session:", error);
                 }
               });
-            }
-
-            // Для упражнений на выносливость
-            else if (
+            } else if (
               (exercise.type === "ENDURANCE" ||
                 exercise.type === "Endurance") &&
               exercise.sessions &&
@@ -226,7 +226,6 @@ export default function WorkoutPlansPage() {
               exercise.id
             );
 
-            // Для силовых упражнений
             if (
               (exercise.type === "STRENGTH" || exercise.type === "Strength") &&
               exercise.sets &&
@@ -251,10 +250,7 @@ export default function WorkoutPlansPage() {
                   console.error("Error adding set:", error);
                 }
               });
-            }
-
-            // Для кардио упражнений
-            else if (
+            } else if (
               (exercise.type === "CARDIO" || exercise.type === "Cardio") &&
               exercise.sessions &&
               exercise.sessions.length > 0
@@ -266,7 +262,7 @@ export default function WorkoutPlansPage() {
                   const caloriesBurned = Number(session.caloriesBurned);
 
                   if (!isNaN(duration) && !isNaN(distance)) {
-                    workoutPlanService.addCardioSessionToExerciseInWorkoutPlan(
+                    workoutPlanService.addSessionToExerciseInWorkoutPlan(
                       createdPlan.id,
                       exercise.id,
                       duration,
@@ -280,10 +276,7 @@ export default function WorkoutPlansPage() {
                   console.error("Error adding cardio session:", error);
                 }
               });
-            }
-
-            // Для упражнений на выносливость
-            else if (
+            } else if (
               (exercise.type === "ENDURANCE" ||
                 exercise.type === "Endurance") &&
               exercise.sessions &&
