@@ -1,5 +1,14 @@
 import { Button, Divider, Modal, Tabs, Spin, Card, Tag, Empty } from "antd";
-import { Edit, Trash, Calendar, Weight, BarChart2 } from "lucide-react";
+import {
+  Edit,
+  Trash,
+  Calendar,
+  Weight,
+  BarChart2,
+  Clock,
+  Navigation,
+  Flame,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 
@@ -30,6 +39,20 @@ export default function WorkoutPlanInfoModal({
     }
   }, [isOpen, workoutPlan, workoutService]);
 
+  const formatTime = (minutes) => {
+    if (!minutes || minutes === 0) return "0 мин";
+    const h = Math.floor(minutes / 60);
+    const m = Math.floor(minutes % 60);
+    let result = "";
+    if (h > 0) {
+      result += `${h} ч `;
+    }
+    if (m > 0 || h === 0) {
+      result += `${m} мин`;
+    }
+    return result.trim() || "0 мин";
+  };
+
   const loadPlanHistory = () => {
     if (!workoutPlan || !workoutService) return;
 
@@ -50,33 +73,44 @@ export default function WorkoutPlanInfoModal({
 
       const historyData = sortedWorkouts.map((workout) => {
         let totalWeight = 0;
-        try {
-          if (typeof workout.getTotalWeight === "function") {
-            totalWeight = workout.getTotalWeight();
-          } else {
-            (workout.exercises || []).forEach((exercise) => {
-              if (
-                exercise.type === "STRENGTH" ||
-                exercise.type === "Strength"
-              ) {
-                const sets = exercise.sets || exercise.completedSets || [];
-                sets.forEach((set) => {
-                  totalWeight +=
-                    (Number(set.weight) || 0) * (Number(set.reps) || 0);
-                });
-              }
+        let totalDistance = 0;
+        let totalDuration = 0; // в минутах
+        let totalCalories = 0;
+        const exercisesCount = (workout.exercises || []).length;
+
+        (workout.exercises || []).forEach((exercise) => {
+          const exerciseType = (exercise.type || "").toUpperCase();
+          const sets = exercise.completedSets || exercise.sets || [];
+          const sessions =
+            exercise.completedSessions || exercise.sessions || [];
+
+          if (exerciseType === "STRENGTH") {
+            sets.forEach((set) => {
+              totalWeight +=
+                (Number(set.weight) || 0) * (Number(set.reps) || 0);
+            });
+          } else if (exerciseType === "CARDIO") {
+            sessions.forEach((session) => {
+              totalDistance += Number(session.distance) || 0;
+              totalDuration += Number(session.duration) || 0;
+              totalCalories += Number(session.caloriesBurned) || 0;
+            });
+          } else if (exerciseType === "ENDURANCE") {
+            sessions.forEach((session) => {
+              totalDuration += Number(session.duration) || 0;
             });
           }
-        } catch (error) {
-          console.error("Ошибка при расчете общего веса:", error);
-        }
+        });
 
         return {
           workoutId: workout.id,
           workoutName: workout.name || `Тренировка ${workout.id}`,
           date: formatDate(workout.date),
-          totalWeight: totalWeight,
-          exercisesCount: (workout.exercises || []).length,
+          totalWeight,
+          totalDistance,
+          totalDuration,
+          totalCalories,
+          exercisesCount,
         };
       });
 
@@ -185,32 +219,67 @@ export default function WorkoutPlanInfoModal({
                   title={
                     <div className="flex justify-between items-center">
                       <span className="font-bold">{item.workoutName}</span>
-                      <Tag color="blue" className="flex items-center">
-                        <div className="flex items-center gap-2 my-1.5 mx-1">
+                      <Tag color="blue">
+                        <div className="flex items-center gap-1.5 py-0.5 px-2">
                           <Calendar size={14} />
-                          <p>{item.date}</p>
+                          <span>{item.date}</span>
                         </div>
                       </Tag>
                     </div>
                   }
                 >
-                  <div className="flex justify-between items-center">
-                    <span>Количество упражнений: {item.exercisesCount}</span>
-                    <Tag color="green">
-                      <div className="flex items-center gap-2 my-1.5 mx-1">
-                        <Weight size={14} />
-                        <p>{item.totalWeight} кг</p>
-                      </div>
-                    </Tag>
+                  <div className="flex flex-wrap gap-2">
+                    {item.exercisesCount > 0 && (
+                      <Tag>
+                        <div className="flex items-center gap-1.5 py-0.5 px-2">
+                          <BarChart2 size={14} />
+                          <span>{item.exercisesCount} упр.</span>
+                        </div>
+                      </Tag>
+                    )}
+                    {item.totalWeight > 0 && (
+                      <Tag color="green">
+                        <div className="flex items-center gap-1.5 py-0.5 px-2">
+                          <Weight size={14} />
+                          <span>{item.totalWeight} кг</span>
+                        </div>
+                      </Tag>
+                    )}
+                    {item.totalDistance > 0 && (
+                      <Tag color="cyan">
+                        <div className="flex items-center gap-1.5 py-0.5 px-2">
+                          <Navigation size={14} />
+                          <span>{item.totalDistance.toFixed(1)} км</span>
+                        </div>
+                      </Tag>
+                    )}
+                    {item.totalDuration > 0 && (
+                      <Tag color="purple">
+                        <div className="flex items-center gap-1.5 py-0.5 px-2">
+                          <Clock size={14} />
+                          <span>{formatTime(item.totalDuration)}</span>
+                        </div>
+                      </Tag>
+                    )}
+                    {item.totalCalories > 0 && (
+                      <Tag color="orange">
+                        <div className="flex items-center gap-1.5 py-0.5 px-2">
+                          <Flame size={14} />
+                          <span>{item.totalCalories} ккал</span>
+                        </div>
+                      </Tag>
+                    )}
                   </div>
                 </Card>
               ))}
 
               {planHistory.length > 5 && (
                 <div className="flex items-center justify-center my-2">
-                  <Tag color="blue" className="flex items-center gap-1">
-                    <BarChart2 size={14} />
-                    Всего тренировок: {planHistory.length}
+                  <Tag color="geekblue">
+                    <div className="flex items-center gap-1.5 py-0.5 px-2">
+                      <BarChart2 size={14} />
+                      <span>Всего тренировок: {planHistory.length}</span>
+                    </div>
                   </Tag>
                 </div>
               )}
