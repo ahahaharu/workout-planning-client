@@ -40,6 +40,8 @@ export const bodyPartMap = {
   elliptical: "Эллипс",
   stairmaster: "Степпер",
 
+  general: "Общее",
+
   static: "Статика",
   dynamic: "Динамика",
 };

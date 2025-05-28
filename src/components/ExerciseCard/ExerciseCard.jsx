@@ -1,20 +1,19 @@
 import { Button } from "antd";
 import React, { useState } from "react";
 import ExerciseInfoModal from "../ExerciseInfoModal/ExerciseInfoModal";
+// Импортируем функции для перевода из utils
+import {
+  getExerciseTypeName,
+  getBodyPartName,
+} from "../../utils/exerciseTranslations";
 
 export default function ExerciseCard({ exercise, onDelete, onEdit }) {
   const [infoModalOpen, setInfoModalOpen] = useState(false);
-  const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState(null);
 
-  const openInfoModal = (exercise) => {
-    setSelectedExercise(exercise);
+  const openInfoModal = (exerciseToOpen) => {
+    setSelectedExercise(exerciseToOpen);
     setInfoModalOpen(true);
-  };
-
-  const openDetailModal = (exercise) => {
-    setSelectedExercise(exercise);
-    setDetailModalOpen(true);
   };
 
   const handleDelete = () => {
@@ -27,38 +26,6 @@ export default function ExerciseCard({ exercise, onDelete, onEdit }) {
     if (onEdit) {
       onEdit(id, updatedExercise);
     }
-  };
-
-  const getTypeName = (type) => {
-    const typeNames = {
-      STRENGTH: "Силовые",
-      CARDIO: "Кардио",
-      ENDURANCE: "Выносливость",
-    };
-    return typeNames[type] || type;
-  };
-
-  const getBodyPartName = (bodyPart) => {
-    if (!bodyPart) return "";
-
-    const bodyPartMap = {
-      chest: "Грудь",
-      back: "Спина",
-      biceps: "Бицепс",
-      triceps: "Трицепс",
-      shoulders: "Плечи",
-      legs: "Ноги",
-      abs: "Пресс",
-      arms: "Руки",
-      general: "Общая",
-      forearms: "Предплечья",
-      calves: "Икры",
-      glutes: "Ягодицы",
-      quads: "Четырехглавая",
-      hamstrings: "Задняя поверхность бедра",
-    };
-
-    return bodyPartMap[bodyPart] || bodyPart;
   };
 
   return (
@@ -76,8 +43,10 @@ export default function ExerciseCard({ exercise, onDelete, onEdit }) {
         <div className="flex flex-col justify-center">
           <h1 className="text-xl">{exercise.name}</h1>
           <p className="text-gray-400">
-            {getTypeName(exercise.category)} ·{" "}
-            {getBodyPartName(exercise.bodyPart)}
+            {getExerciseTypeName(exercise.category)}
+            {exercise.bodyPart && exercise.bodyPart !== "general"
+              ? ` · ${getBodyPartName(exercise.bodyPart)}`
+              : ""}
           </p>
         </div>
       </div>
@@ -100,13 +69,18 @@ export default function ExerciseCard({ exercise, onDelete, onEdit }) {
         </Button>
       </div>
 
-      <ExerciseInfoModal
-        isOpen={infoModalOpen}
-        onClose={() => setInfoModalOpen(false)}
-        exercise={selectedExercise}
-        onDelete={onDelete ? handleDelete : null}
-        onEdit={onEdit ? handleEdit : null}
-      />
+      {selectedExercise && (
+        <ExerciseInfoModal
+          isOpen={infoModalOpen}
+          onClose={() => {
+            setInfoModalOpen(false);
+            setSelectedExercise(null);
+          }}
+          exercise={selectedExercise}
+          onDelete={onDelete ? () => handleDelete() : null}
+          onEdit={onEdit ? (id, data) => handleEdit(id, data) : null}
+        />
+      )}
     </div>
   );
 }

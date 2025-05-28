@@ -90,8 +90,7 @@ export default function ExerciseStatistics({
           >
             {exercises.map((exercise) => (
               <Option key={exercise.id} value={exercise.id}>
-                {exercise.name}{" "}
-                {exercise.bodyPart ? `(${exercise.bodyPart})` : ""}
+                {exercise.name}
               </Option>
             ))}
           </Select>

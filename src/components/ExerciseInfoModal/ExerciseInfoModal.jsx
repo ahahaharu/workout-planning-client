@@ -13,6 +13,10 @@ import React, { useEffect, useState } from "react";
 import ExerciseAdditionModal from "../AddExerciseModal/ExerciseAdditionModal";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 import { useAuth } from "../../context/AuthContext";
+import {
+  getExerciseTypeName,
+  getBodyPartName,
+} from "../../utils/exerciseTranslations";
 
 export default function ExerciseInfoModal({
   isOpen,
@@ -29,19 +33,6 @@ export default function ExerciseInfoModal({
   const { workoutService } = useWorkoutPlanner();
   const { currentUser } = useAuth();
 
-  const getTranslatedCategory = (categoryCode) => {
-    const categoryMap = {
-      STRENGTH: "Силовые",
-      Strength: "Силовые",
-      CARDIO: "Кардио",
-      Cardio: "Кардио",
-      ENDURANCE: "Выносливость",
-      Endurance: "Выносливость",
-    };
-
-    return categoryMap[categoryCode] || categoryCode;
-  };
-
   const getOriginalCategoryType = (translatedCategory) => {
     const categoryMap = {
       Силовые: "STRENGTH",
@@ -49,7 +40,7 @@ export default function ExerciseInfoModal({
       Выносливость: "ENDURANCE",
     };
 
-    return categoryMap[translatedCategory] || "STRENGTH";
+    return categoryMap[translatedCategory] || exercise?.category || "STRENGTH";
   };
 
   useEffect(() => {
@@ -352,11 +343,11 @@ export default function ExerciseInfoModal({
           <div className="text-gray-600">
             <p>
               <b>Категория:</b>{" "}
-              {exercise ? getTranslatedCategory(exercise.category) : ""}
+              {exercise ? getExerciseTypeName(exercise.category) : ""}
             </p>
             <p>
               <b>Часть тела: </b>
-              {exercise?.bodyPart}
+              {exercise ? getBodyPartName(exercise.bodyPart) : ""}
             </p>
           </div>
           <div className="mb-5">
@@ -500,7 +491,7 @@ export default function ExerciseInfoModal({
         onCancel={onClose}
         width={600}
       >
-        {loading ? (
+        {loading || !exercise ? (
           <div className="flex justify-center items-center h-60">
             <Spin size="large" />
           </div>
@@ -523,11 +514,15 @@ export default function ExerciseInfoModal({
           initialData={{
             id: exercise.id,
             name: exercise.name,
-            category: getOriginalCategoryType(exercise.category),
+            category: exercise.category,
             bodyPart: exercise.bodyPart,
             description: exercise.description,
             videoId: exercise.videoUrl,
             image: exercise.image,
+            cardioType:
+              exercise.category === "CARDIO" ? exercise.bodyPart : undefined,
+            targetMuscle:
+              exercise.category === "ENDURANCE" ? exercise.bodyPart : undefined,
           }}
         />
       )}
