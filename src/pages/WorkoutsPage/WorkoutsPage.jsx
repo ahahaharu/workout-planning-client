@@ -242,49 +242,59 @@ export default function WorkoutsPage() {
   };
 
   const handleStartPlanWorkout = (workoutData) => {
-    if (workoutData.planId && workoutPlanService) {
+    // workoutData comes from WorkoutSelectorModal, should contain planId (e.g., { date: Date, planId: number|string, exercises: [] })
+    if (
+      workoutData.planId !== undefined &&
+      workoutData.planId !== null &&
+      !Number.isNaN(workoutData.planId) && // Добавлена проверка на NaN
+      workoutPlanService
+    ) {
       try {
-        const planId =
-          typeof workoutData.planId === "object"
-            ? workoutData.planId.id
-            : workoutData.planId;
-
-        const plan = workoutPlanService.getWorkoutPlanById(planId);
+        // ID плана из workoutData должен быть уже числом или строкой, готовой к использованию
+        const plan = workoutPlanService.getWorkoutPlanById(workoutData.planId);
 
         if (plan) {
           console.log("Загружен план тренировки:", plan);
-
           setCurrentWorkout({
-            ...workoutData,
-            planId: plan.id,
+            ...workoutData, // Сохраняем дату и другие данные из workoutData
+            planId: plan.id, // Используем ID из найденного объекта плана
             name: `Тренировка по плану «${plan.name}»`,
             exercises: plan.exercises || [],
           });
         } else {
-          console.warn("План тренировки не найден:", planId);
+          console.warn("План тренировки не найден по ID:", workoutData.planId);
+          message.error(
+            `План тренировки с ID ${workoutData.planId} не найден.`
+          );
           setCurrentWorkout({
             ...workoutData,
-            name: "Тренировка по плану",
-            exercises: [],
+            name: "Тренировка (План не найден)",
+            planId: null, // Явно устанавливаем planId в null, если план не найден
           });
         }
       } catch (error) {
         console.error("Ошибка при получении плана тренировки:", error);
         message.error(`Ошибка при загрузке плана: ${error.message}`);
-
         setCurrentWorkout({
           ...workoutData,
-          name: "Тренировка",
-          exercises: [],
+          name: "Тренировка (Ошибка загрузки плана)",
+          planId: null, // Явно устанавливаем planId в null при ошибке
         });
       }
     } else {
+      console.error(
+        "Некорректный или отсутствующий ID плана от селектора:",
+        workoutData.planId
+      );
+      message.error(
+        "Не удалось начать тренировку по плану: ID плана некорректен."
+      );
       setCurrentWorkout({
         ...workoutData,
-        name: "Тренировка",
+        name: "Тренировка (Ошибка: неверный ID плана)",
+        planId: null, // Явно устанавливаем planId в null, если исходный ID плохой
       });
     }
-
     setSessionModalOpen(true);
   };
 
