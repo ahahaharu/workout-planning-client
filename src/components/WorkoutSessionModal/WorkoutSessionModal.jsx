@@ -73,7 +73,6 @@ export default function WorkoutSessionModal({
         const processedExercises = workoutData.exercises.map((exercise) => {
           let processedExercise = { ...exercise };
 
-          // Обработка силовых упражнений
           if (exercise.type === "STRENGTH" || exercise.type === "Strength") {
             processedExercise.sets = exercise.sets || [];
             processedExercise.completedSets =
@@ -83,10 +82,7 @@ export default function WorkoutSessionModal({
             processedExercise.originalSets = JSON.parse(
               JSON.stringify(exercise.sets || [])
             );
-          }
-
-          // Обработка кардио упражнений
-          else if (exercise.type === "CARDIO" || exercise.type === "Cardio") {
+          } else if (exercise.type === "CARDIO" || exercise.type === "Cardio") {
             processedExercise.sessions = exercise.sessions || [];
             processedExercise.completedSessions =
               exercise.sessions && exercise.sessions.length > 0
@@ -95,10 +91,7 @@ export default function WorkoutSessionModal({
             processedExercise.originalSessions = JSON.parse(
               JSON.stringify(exercise.sessions || [])
             );
-          }
-
-          // Обработка упражнений на выносливость
-          else if (
+          } else if (
             exercise.type === "ENDURANCE" ||
             exercise.type === "Endurance"
           ) {
@@ -117,7 +110,6 @@ export default function WorkoutSessionModal({
 
         setExercises(processedExercises);
 
-        // Расчёт всех метрик
         setTimeout(() => {
           calculateTotalWeight(processedExercises);
           calculateTotalDistance(processedExercises);
@@ -178,7 +170,6 @@ export default function WorkoutSessionModal({
 
     let initialData = {};
 
-    // Подготавливаем начальные данные в зависимости от типа упражнения
     if (exercise.type === "STRENGTH" || exercise.type === "Strength") {
       initialData = {
         sets: [],
@@ -208,7 +199,6 @@ export default function WorkoutSessionModal({
     setExercises(updatedExercises);
     setExerciseModalOpen(false);
 
-    // Пересчитываем все метрики
     calculateTotalWeight(updatedExercises);
     calculateTotalDistance(updatedExercises);
     calculateTotalDuration(updatedExercises);
@@ -369,7 +359,6 @@ export default function WorkoutSessionModal({
     let isModified = false;
 
     for (const exercise of currentExercises) {
-      // Проверка для силовых упражнений
       if (
         (exercise.type === "STRENGTH" || exercise.type === "Strength") &&
         exercise.originalSets
@@ -392,10 +381,7 @@ export default function WorkoutSessionModal({
             break;
           }
         }
-      }
-
-      // Проверка для кардио и упражнений на выносливость
-      else if (
+      } else if (
         (exercise.type === "CARDIO" ||
           exercise.type === "Cardio" ||
           exercise.type === "ENDURANCE" ||
@@ -418,7 +404,6 @@ export default function WorkoutSessionModal({
             break;
           }
 
-          // Для кардио
           if (
             (exercise.type === "CARDIO" || exercise.type === "Cardio") &&
             (completed.duration !== original.duration ||
@@ -427,10 +412,7 @@ export default function WorkoutSessionModal({
           ) {
             isModified = true;
             break;
-          }
-
-          // Для выносливости
-          else if (
+          } else if (
             (exercise.type === "ENDURANCE" || exercise.type === "Endurance") &&
             (completed.duration !== original.duration ||
               completed.difficulty !== original.difficulty)
@@ -466,7 +448,6 @@ export default function WorkoutSessionModal({
         return;
       }
 
-      // Удаляем все упражнения из плана
       if (plan.exercises && plan.exercises.length > 0) {
         [...plan.exercises].forEach((exercise) => {
           workoutPlanService.removeExerciseFromWorkoutPlan(
@@ -476,11 +457,9 @@ export default function WorkoutSessionModal({
         });
       }
 
-      // Добавляем упражнения обратно с обновленными данными
       savedWorkout.exercises.forEach((exercise) => {
         workoutPlanService.addExerciseToWorkoutPlan(plan.id, exercise.id);
 
-        // Добавляем подходы для силовых упражнений
         if (
           (exercise.type === "STRENGTH" || exercise.type === "Strength") &&
           exercise.completedSets &&
@@ -503,10 +482,7 @@ export default function WorkoutSessionModal({
               console.error("Ошибка при добавлении подхода:", error);
             }
           });
-        }
-
-        // Добавляем сессии для кардио упражнений
-        else if (
+        } else if (
           (exercise.type === "CARDIO" || exercise.type === "Cardio") &&
           exercise.completedSessions &&
           exercise.completedSessions.length > 0
@@ -518,7 +494,6 @@ export default function WorkoutSessionModal({
               const caloriesBurned = Number(session.caloriesBurned) || 0;
 
               if (duration > 0 && distance > 0) {
-                // Предполагаем, что есть метод для добавления кардио сессии в план
                 workoutPlanService.addCardioSessionToExerciseInWorkoutPlan(
                   plan.id,
                   exercise.id,
@@ -531,10 +506,7 @@ export default function WorkoutSessionModal({
               console.error("Ошибка при добавлении кардио сессии:", error);
             }
           });
-        }
-
-        // Добавляем сессии для упражнений на выносливость
-        else if (
+        } else if (
           (exercise.type === "ENDURANCE" || exercise.type === "Endurance") &&
           exercise.completedSessions &&
           exercise.completedSessions.length > 0
@@ -545,7 +517,6 @@ export default function WorkoutSessionModal({
               const difficulty = Number(session.difficulty) || 0;
 
               if (duration > 0) {
-                // Предполагаем, что есть метод для добавления сессии выносливости в план
                 workoutPlanService.addEnduranceSessionToExerciseInWorkoutPlan(
                   plan.id,
                   exercise.id,

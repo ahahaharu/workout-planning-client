@@ -1,7 +1,6 @@
 import { Button } from "antd";
 import React, { useState } from "react";
 import ExerciseInfoModal from "../ExerciseInfoModal/ExerciseInfoModal";
-// Импортируем функции для перевода из utils
 import {
   getExerciseTypeName,
   getBodyPartName,

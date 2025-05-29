@@ -51,7 +51,6 @@ export const getExerciseTypeName = (type) => {
   return exerciseTypeMap[type] || type;
 };
 
-// Функция для получения русского названия части тела
 export const getBodyPartName = (bodyPart) => {
   if (!bodyPart) return "";
   return bodyPartMap[bodyPart] || bodyPart;

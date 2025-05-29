@@ -16,7 +16,6 @@ export default function ExercisesPage() {
   const [exercises, setExercises] = useState([]);
   const [filteredExercises, setFilteredExercises] = useState([]);
 
-  // Состояния для отображения фильтров со счетчиками
   const [exerciseCategories, setExerciseCategories] = useState([
     { id: ExerciseType.STRENGTH, name: "Силовые", count: 0 },
     { id: ExerciseType.CARDIO, name: "Кардио", count: 0 },
@@ -31,7 +30,6 @@ export default function ExercisesPage() {
     { id: "legs", name: "Ноги", count: 0 },
   ]);
 
-  // Состояния для хранения ВЫБРАННЫХ категорий и частей тела для фильтрации
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedBodyParts, setSelectedBodyParts] = useState([]);
 
@@ -137,18 +135,18 @@ export default function ExercisesPage() {
     const newFiltered = calculateFilteredExercises(
       exercises,
       searchQuery,
-      selectedCategories, // Теперь это объявленное состояние
-      selectedBodyParts // Теперь это объявленное состояние
+      selectedCategories,
+      selectedBodyParts
     );
     setFilteredExercises(newFiltered);
   }, [exercises, searchQuery, selectedCategories, selectedBodyParts]);
 
   const handleCategorySelect = (categories) => {
-    setSelectedCategories(categories); // Используем правильный сеттер
+    setSelectedCategories(categories);
   };
 
   const handleBodyPartSelect = (bodyParts) => {
-    setSelectedBodyParts(bodyParts); // Используем правильный сеттер
+    setSelectedBodyParts(bodyParts);
   };
 
   const handleAddExercise = (newExerciseData) => {
@@ -190,7 +188,7 @@ export default function ExercisesPage() {
 
         const updatedExercises = [...exercises, createdExercise];
         setExercises(updatedExercises);
-        updateFilterCounts(updatedExercises); // Обновляем счетчики после обновления exercises
+        updateFilterCounts(updatedExercises);
 
         message.success(`Упражнение "${createdExercise.name}" добавлено`);
       } catch (error) {
@@ -206,7 +204,7 @@ export default function ExercisesPage() {
         exerciseService.removeExercise(exerciseId);
         const updatedExercises = exercises.filter((ex) => ex.id !== exerciseId);
         setExercises(updatedExercises);
-        updateFilterCounts(updatedExercises); // Обновляем счетчики после обновления exercises
+        updateFilterCounts(updatedExercises);
 
         message.success("Упражнение удалено");
       } catch (error) {
@@ -227,7 +225,7 @@ export default function ExercisesPage() {
         originalExercise.name = updatedExerciseData.name;
         originalExercise.description = updatedExerciseData.description;
         originalExercise.image = updatedExerciseData.image;
-        originalExercise.mediaUrl = updatedExerciseData.videoId; // Предполагаем, что videoId это mediaUrl
+        originalExercise.mediaUrl = updatedExerciseData.videoId;
 
         if (originalExercise.type === ExerciseType.STRENGTH) {
           originalExercise.bodyPart = updatedExerciseData.bodyPart;
@@ -237,8 +235,8 @@ export default function ExercisesPage() {
           originalExercise.targetMuscle = updatedExerciseData.targetMuscle;
         }
 
-        exerciseService._saveExercises(); // Сохраняем изменения в сервисе
-        loadExercises(); // Перезагружаем все упражнения для отражения изменений и обновления счетчиков
+        exerciseService._saveExercises();
+        loadExercises();
 
         message.success(`Упражнение "${updatedExerciseData.name}" обновлено`);
       } catch (error) {
@@ -249,7 +247,6 @@ export default function ExercisesPage() {
   };
 
   const handleShowDetail = (exercise) => {
-    // Убедимся, что selectedExercise имеет videoUrl для ExerciseInfoModal
     setSelectedExercise({
       ...exercise,
       videoUrl: exercise.mediaUrl || exercise.videoUrl,
@@ -290,11 +287,11 @@ export default function ExercisesPage() {
                   exercise.bodyPart ||
                   exercise.targetMuscle ||
                   exercise.cardioType,
-                videoUrl: exercise.mediaUrl || exercise.videoUrl, // Передаем videoUrl
+                videoUrl: exercise.mediaUrl || exercise.videoUrl,
                 description: exercise.description,
               }}
               onDelete={() => handleDeleteExercise(exercise.id)}
-              onEdit={handleEditExercise} // Передаем полную функцию
+              onEdit={handleEditExercise}
               onShowDetail={() => handleShowDetail(exercise)}
             />
           ))}
@@ -333,9 +330,9 @@ export default function ExercisesPage() {
       <ExerciseInfoModal
         isOpen={detailModalOpen}
         onClose={() => setDetailModalOpen(false)}
-        exercise={selectedExercise} // selectedExercise уже содержит videoUrl после handleShowDetail
-        onDelete={handleDeleteExercise} // Передаем обработчик
-        onEdit={handleEditExercise} // Передаем обработчик
+        exercise={selectedExercise}
+        onDelete={handleDeleteExercise}
+        onEdit={handleEditExercise}
       />
     </PageLayout>
   );

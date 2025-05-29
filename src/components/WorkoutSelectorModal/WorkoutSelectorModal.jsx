@@ -29,7 +29,6 @@ export default function WorkoutSelectorModal({
   const { workoutPlanService } = useWorkoutPlanner();
   const { currentUser } = useAuth();
 
-  // Эффект для загрузки планов тренировок
   useEffect(() => {
     if (isOpen && workoutPlanService && currentUser) {
       setLoading(true);

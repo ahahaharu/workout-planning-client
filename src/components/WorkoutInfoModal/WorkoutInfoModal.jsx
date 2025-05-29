@@ -100,7 +100,6 @@ export default function WorkoutInfoModal({
     }
   }, [isOpen, workout, exerciseService]);
 
-  // Функция для рендеринга подходов силовых упражнений
   const renderExerciseSets = (exercise) => {
     const sets = exercise.completedSets || exercise.sets || [];
 
@@ -133,7 +132,6 @@ export default function WorkoutInfoModal({
     );
   };
 
-  // Функция для рендеринга сессий кардио упражнений
   const renderCardioSessions = (exercise) => {
     const sessions = exercise.completedSessions || exercise.sessions || [];
 
@@ -186,7 +184,6 @@ export default function WorkoutInfoModal({
     );
   };
 
-  // Функция для рендеринга сессий упражнений на выносливость
   const renderEnduranceSessions = (exercise) => {
     const sessions = exercise.completedSessions || exercise.sessions || [];
 
@@ -231,7 +228,6 @@ export default function WorkoutInfoModal({
     );
   };
 
-  // Функция для определения, какие данные упражнения отображать
   const renderExerciseData = (exercise) => {
     const exerciseType = (exercise.type || "").toUpperCase();
 
@@ -246,7 +242,6 @@ export default function WorkoutInfoModal({
     return null;
   };
 
-  // Функция для расчета суммарных метрик тренировки
   const calculateWorkoutMetrics = (workout) => {
     if (!workout || !workout.exercises) return {};
 
@@ -382,7 +377,6 @@ export default function WorkoutInfoModal({
     );
   }
 
-  // Расчет метрик для отображения
   const metrics = enhancedWorkout
     ? calculateWorkoutMetrics(enhancedWorkout)
     : {};

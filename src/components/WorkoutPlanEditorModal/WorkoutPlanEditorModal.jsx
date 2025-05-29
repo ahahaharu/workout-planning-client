@@ -289,7 +289,6 @@ export default function WorkoutPlanEditorModal({
     setExercises(newExercises);
   };
 
-  // Функции для работы с кардио упражнениями (сессии)
   const handleAddCardioSession = (exerciseId) => {
     const newExercises = exercises.map((ex) => {
       if (ex.id === exerciseId) {

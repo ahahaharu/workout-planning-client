@@ -73,7 +73,6 @@ export default function ExerciseStatistics({
     );
   }
 
-  // Секция выбора упражнения и фильтра дат
   const filtersSection = (
     <>
       <div className="mb-4">

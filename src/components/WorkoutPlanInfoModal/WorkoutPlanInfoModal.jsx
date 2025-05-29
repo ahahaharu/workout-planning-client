@@ -74,7 +74,7 @@ export default function WorkoutPlanInfoModal({
       const historyData = sortedWorkouts.map((workout) => {
         let totalWeight = 0;
         let totalDistance = 0;
-        let totalDuration = 0; // в минутах
+        let totalDuration = 0;
         let totalCalories = 0;
         const exercisesCount = (workout.exercises || []).length;
 
