@@ -24,6 +24,10 @@ import React, { useEffect, useState } from "react";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 import ExerciseInfoModal from "../ExerciseInfoModal/ExerciseInfoModal";
 import WorkoutSessionModal from "../WorkoutSessionModal/WorkoutSessionModal";
+import {
+  getExerciseTypeName,
+  getBodyPartName,
+} from "../../utils/exerciseTranslations";
 
 export default function WorkoutInfoModal({
   isOpen,
@@ -95,41 +99,6 @@ export default function WorkoutInfoModal({
       }
     }
   }, [isOpen, workout, exerciseService]);
-
-  const getExerciseTypeName = (type) => {
-    const typeMap = {
-      STRENGTH: "Силовое",
-      Strength: "Силовое",
-      CARDIO: "Кардио",
-      Cardio: "Кардио",
-      ENDURANCE: "Выносливость",
-      Endurance: "Выносливость",
-    };
-    return typeMap[type] || type;
-  };
-
-  const getBodyPartName = (bodyPart) => {
-    if (!bodyPart) return "";
-
-    const bodyPartMap = {
-      chest: "Грудь",
-      back: "Спина",
-      biceps: "Бицепс",
-      triceps: "Трицепс",
-      shoulders: "Плечи",
-      legs: "Ноги",
-      abs: "Пресс",
-      arms: "Руки",
-      general: "Общая",
-      forearms: "Предплечья",
-      calves: "Икры",
-      glutes: "Ягодицы",
-      quads: "Четырехглавая",
-      hamstrings: "Задняя поверхность бедра",
-    };
-
-    return bodyPartMap[bodyPart] || bodyPart;
-  };
 
   // Функция для рендеринга подходов силовых упражнений
   const renderExerciseSets = (exercise) => {

@@ -155,6 +155,7 @@ export default function ExerciseStatistics({
         repsProgress: exerciseStats.repsProgress,
         durationProgress: exerciseStats.durationProgress,
         distanceProgress: exerciseStats.distanceProgress,
+        intensityProgress: exerciseStats.intensityProgress,
       },
       null,
       2
@@ -206,7 +207,7 @@ export default function ExerciseStatistics({
       return {
         ...baseData,
         время: entry.totalDuration || 0,
-        интенсивность: entry.totalIntensity || 0,
+        сложность: entry.difficulty || entry.totalIntensity || 0,
       };
     }
 
@@ -281,16 +282,24 @@ export default function ExerciseStatistics({
         <Col span={8}>
           <Statistic
             title="Прогресс в дистанции"
-            value={Math.abs(exerciseStats.distanceProgress || 0).toFixed(1)}
+            value={Math.abs(
+              exerciseStats.distanceProgress ||
+                exerciseStats.totalDistanceProgress ||
+                0
+            ).toFixed(1)}
             suffix="км"
             valueStyle={{
               color:
-                (exerciseStats.distanceProgress || 0) >= 0
+                (exerciseStats.distanceProgress ||
+                  exerciseStats.totalDistanceProgress ||
+                  0) >= 0
                   ? "#3f8600"
                   : "#cf1322",
             }}
             prefix={
-              (exerciseStats.distanceProgress || 0) >= 0 ? (
+              (exerciseStats.distanceProgress ||
+                exerciseStats.totalDistanceProgress ||
+                0) >= 0 ? (
                 <ArrowUpOutlined />
               ) : (
                 <ArrowDownOutlined />
@@ -301,16 +310,24 @@ export default function ExerciseStatistics({
         <Col span={8}>
           <Statistic
             title="Прогресс во времени"
-            value={Math.abs(exerciseStats.durationProgress || 0).toFixed(1)}
+            value={Math.abs(
+              exerciseStats.durationProgress ||
+                exerciseStats.totalDurationProgress ||
+                0
+            ).toFixed(1)}
             suffix="мин"
             valueStyle={{
               color:
-                (exerciseStats.durationProgress || 0) >= 0
+                (exerciseStats.durationProgress ||
+                  exerciseStats.totalDurationProgress ||
+                  0) >= 0
                   ? "#3f8600"
                   : "#cf1322",
             }}
             prefix={
-              (exerciseStats.durationProgress || 0) >= 0 ? (
+              (exerciseStats.durationProgress ||
+                exerciseStats.totalDurationProgress ||
+                0) >= 0 ? (
                 <ArrowUpOutlined />
               ) : (
                 <ArrowDownOutlined />
@@ -322,7 +339,10 @@ export default function ExerciseStatistics({
           <Statistic
             title="Макс. дистанция за раз"
             value={exerciseStats.progress
-              .reduce((max, p) => Math.max(max, p.distance || 0), 0)
+              .reduce(
+                (max, p) => Math.max(max, p.distance || p.totalDistance || 0),
+                0
+              )
               .toFixed(1)}
             suffix="км"
             prefix={<FireOutlined />}
@@ -336,16 +356,24 @@ export default function ExerciseStatistics({
         <Col span={8}>
           <Statistic
             title="Прогресс во времени"
-            value={Math.abs(exerciseStats.durationProgress || 0).toFixed(1)}
+            value={Math.abs(
+              exerciseStats.durationProgress ||
+                exerciseStats.totalDurationProgress ||
+                0
+            ).toFixed(1)}
             suffix="мин"
             valueStyle={{
               color:
-                (exerciseStats.durationProgress || 0) >= 0
+                (exerciseStats.durationProgress ||
+                  exerciseStats.totalDurationProgress ||
+                  0) >= 0
                   ? "#3f8600"
                   : "#cf1322",
             }}
             prefix={
-              (exerciseStats.durationProgress || 0) >= 0 ? (
+              (exerciseStats.durationProgress ||
+                exerciseStats.totalDurationProgress ||
+                0) >= 0 ? (
                 <ArrowUpOutlined />
               ) : (
                 <ArrowDownOutlined />
@@ -355,14 +383,24 @@ export default function ExerciseStatistics({
         </Col>
         <Col span={8}>
           <Statistic
-            title="Прогресс в повторениях"
-            value={Math.abs(exerciseStats.repsProgress || 0)}
+            title="Прогресс в сложности"
+            value={Math.abs(
+              exerciseStats.intensityProgress ||
+                exerciseStats.totalIntensityProgress ||
+                0
+            ).toFixed(1)}
             valueStyle={{
               color:
-                (exerciseStats.repsProgress || 0) >= 0 ? "#3f8600" : "#cf1322",
+                (exerciseStats.intensityProgress ||
+                  exerciseStats.totalIntensityProgress ||
+                  0) >= 0
+                  ? "#3f8600"
+                  : "#cf1322",
             }}
             prefix={
-              (exerciseStats.repsProgress || 0) >= 0 ? (
+              (exerciseStats.intensityProgress ||
+                exerciseStats.totalIntensityProgress ||
+                0) >= 0 ? (
                 <ArrowUpOutlined />
               ) : (
                 <ArrowDownOutlined />
@@ -374,7 +412,10 @@ export default function ExerciseStatistics({
           <Statistic
             title="Макс. время за раз"
             value={exerciseStats.progress
-              .reduce((max, p) => Math.max(max, p.duration || 0), 0)
+              .reduce(
+                (max, p) => Math.max(max, p.duration || p.totalDuration || 0),
+                0
+              )
               .toFixed(1)}
             suffix="мин"
             prefix={<TrophyOutlined />}
@@ -492,9 +533,9 @@ export default function ExerciseStatistics({
             <Line
               yAxisId="right"
               type="monotone"
-              dataKey="повторения"
+              dataKey="сложность"
               stroke="#82ca9d"
-              name="Повторения"
+              name="Сложность (1-10)"
             />
           </LineChart>
         </ResponsiveContainer>

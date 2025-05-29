@@ -31,6 +31,10 @@ import {
 import { Tooltip } from "antd";
 import { useWorkoutPlanner } from "../../context/WorkoutPlannerContext";
 import ExerciseInfoModal from "../ExerciseInfoModal/ExerciseInfoModal";
+import {
+  getExerciseTypeName,
+  getBodyPartName,
+} from "../../utils/exerciseTranslations";
 
 export default function WorkoutSessionModal({
   isOpen,
@@ -729,18 +733,6 @@ export default function WorkoutSessionModal({
         onClose();
       }
     }
-  };
-
-  const getExerciseTypeName = (type) => {
-    const typeMap = {
-      STRENGTH: "Силовое",
-      Strength: "Силовое",
-      CARDIO: "Кардио",
-      Cardio: "Кардио",
-      ENDURANCE: "Выносливость",
-      Endurance: "Выносливость",
-    };
-    return typeMap[type] || type;
   };
 
   const renderExerciseCard = (exercise, index) => {
